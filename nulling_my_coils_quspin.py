@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
         try:
             print("connecting the ports!")
-            OPM_control.connect_all_ports()  # Connect to all sensor ports (8089–8091)
-
+            # connect to port 8089
+            OPM_control.connect(8089)
             # Collect and print a few frames
             n_frames_to_print = 5
             for _ in range(n_frames_to_print):
