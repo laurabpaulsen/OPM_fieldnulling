@@ -184,31 +184,30 @@ class OPMQuspinControl:
 
         self.log_message(f"Stopped receiving data from port {port}")
     
-    
     def process_graph_data(self, port, payload, rows, cols, frame_num):
-        """Process numerical data for analysis (headless)."""
         try:
             cols_adjusted = round(cols * 0.042667)
+            if cols_adjusted <= 0:
+                self.log_message(f"Skipping frame {frame_num}: cols_adjusted={cols_adjusted}")
+                return
 
-            # Parse payload into float32 array
             data_array = np.frombuffer(payload, dtype=np.float32).reshape(rows * 4, cols_adjusted)
-            # Store as rolling history
+            
+            # Store rolling history
             self.connections[port]["data_buffer"].append(data_array)
             self.connections[port]["total_samples"] += cols_adjusted
+            
+            # Store latest frame
+            self.connections[port]["last_frame"] = data_array
 
-            # Optional: trim based on history length
+            # Trim buffer if too long
             max_samples = self.history_seconds * cols_adjusted
-            if self.connections[port]["total_samples"] > max_samples:
-                excess = self.connections[port]["total_samples"] - max_samples
-                # drop oldest frames if buffer is too long
-                while excess > 0 and len(self.connections[port]["data_buffer"]) > 0:
-                    oldest = self.connections[port]["data_buffer"].popleft()
-                    excess -= oldest.shape[1]
-                self.connections[port]["total_samples"] = max_samples
+            while self.connections[port]["total_samples"] > max_samples and len(self.connections[port]["data_buffer"]) > 0:
+                oldest = self.connections[port]["data_buffer"].popleft()
+                self.connections[port]["total_samples"] -= oldest.shape[1]
 
         except Exception as e:
             self.log_message(f"Error processing graph data: {e}")
-
     def read_exact(self, port, byte_count):
         """Read exactly byte_count bytes from the socket"""
         data = b''
