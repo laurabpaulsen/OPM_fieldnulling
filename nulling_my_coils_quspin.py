@@ -81,7 +81,7 @@ if __name__ == "__main__":
                 if frame is not None:
                     print(f"Latest frame: with shape {frame.shape}")
 
-                    print(frame[:5])
+                    print(frame[:5]*10000)
 
                 #if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
                 #    frame = OPM_control.connections[8089]["last_frame"]
