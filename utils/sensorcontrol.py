@@ -192,11 +192,13 @@ class OPMQuspinControl:
                 return
 
             data_array = np.frombuffer(payload, dtype=np.float32).reshape(rows * 4, cols_adjusted)
-            
-            # Store rolling history
-            self.connections[port]["data_buffer"].append(data_array)
-            self.connections[port]["total_samples"] += cols_adjusted
-            
+            # check if any data is not zero
+            print("Data array shape:", data_array.shape)
+            if np.any(data_array != 0):
+                print("Non-zero data found")
+            else:
+                print("All data is zero")
+
             # Store latest frame
             self.connections[port]["last_frame"] = data_array
 
@@ -208,6 +210,7 @@ class OPMQuspinControl:
 
         except Exception as e:
             self.log_message(f"Error processing graph data: {e}")
+
     def read_exact(self, port, byte_count):
         """Read exactly byte_count bytes from the socket"""
         data = b''
