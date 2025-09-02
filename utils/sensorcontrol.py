@@ -17,13 +17,13 @@ class OPMQuspinControl:
 
         # Initialize connection data
         self.connections = {
-            8089: {"connected": False, "socket": None, "name": "Data Stream", "data": [], "total_samples": 0},
+            8089: {"connected": False, "socket": None, "name": "Data Stream", "data": [], "total_samples": 0, "data_buffer": []},
             8090: {"connected": False, "socket": None, "name": "Text Display 1", "show_first_page": True},
             8091: {"connected": False, "socket": None, "name": "Text Display 2"},
             8092: {"connected": False, "socket": None, "name": "Command Channel"}
         }
         # Load commands
-        self.commands = self.load_commands("N1_Commands.txt")
+        #self.commands = self.load_commands("N1_Commands.txt")
         self.server_ip = server_ip
         self.history_seconds = 10  # Default history length
 
@@ -187,12 +187,11 @@ class OPMQuspinControl:
     def process_graph_data(self, port, payload, rows, cols, frame_num):
         """Process numerical data for analysis (headless)."""
         try:
-            # Adjusted number of columns (matches original logic, but simplified)
             cols_adjusted = round(cols * 0.042667)
 
             # Parse payload into float32 array
             data_array = np.frombuffer(payload, dtype=np.float32).reshape(rows * 4, cols_adjusted)
-
+            print(data_array.shape)
             # Store as rolling history
             self.connections[port]["data_buffer"].append(data_array)
             self.connections[port]["total_samples"] += cols_adjusted

@@ -33,7 +33,6 @@ def parse_args():
     parser.add_argument('--nulling_type', type=str, default='full', help='Whether to complete the "full" nulling procedure or "finetune"')
     parser.add_argument('--n_channels', type=int, default=16, help='The expected number of OPM channels')
     parser.add_argument('--start_coil_vals', type=str, default='reliable_initial_guess', help='Which values to start the compensation coils at')
-    parser.add_argument('--i', default="10.60.200.72", type=lambda x: x.split(","), help='ip')
 
     args = parser.parse_args()
     
