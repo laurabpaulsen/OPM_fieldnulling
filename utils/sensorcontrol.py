@@ -236,6 +236,18 @@ class OPMQuspinControl:
         """Convert uint8 array to string, filtering non-displayable characters"""
         return ''.join(chr(b) if (32 <= b <= 126) or b == 20 else '' for b in uint8_array)
 
+    def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
+        """Process text data from the OPM sensor"""
+        try:
+            # Convert payload to string
+            text = self.uint8_array_to_string(payload)
+
+            # Store latest frame
+            self.connections[port]["last_frame"] = text
+            print(f"Received text on port {port}: {text}")
+
+        except Exception as e:
+            self.log_message(f"Error processing text data: {e}")
 
     def on_history_change(self, event=None):
         """Handle history length change"""
