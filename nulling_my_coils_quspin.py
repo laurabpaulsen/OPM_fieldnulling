@@ -75,8 +75,12 @@ if __name__ == "__main__":
             OPM_control.connect(8089)
             # Collect and print a few frames
             n_frames_to_print = 5
-            for _ in range(n_frames_to_print):
-                OPM_control.receive_data(8089)
+            
+            for _ in range(5):
+                frame = OPM_control.connections[8089].get("last_frame")
+                if frame is not None:
+                    print("Latest frame:")
+                    print(frame)
                 #if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
                 #    frame = OPM_control.connections[8089]["last_frame"]
                 #    if frame is not None:

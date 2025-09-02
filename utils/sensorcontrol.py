@@ -193,11 +193,6 @@ class OPMQuspinControl:
 
             data_array = np.frombuffer(payload, dtype=np.float32).reshape(rows * 4, cols_adjusted)
             # check if any data is not zero
-            print("Data array shape:", data_array.shape)
-            if np.any(data_array != 0):
-                print("Non-zero data found")
-            else:
-                print("All data is zero")
 
             # Store latest frame
             self.connections[port]["last_frame"] = data_array
