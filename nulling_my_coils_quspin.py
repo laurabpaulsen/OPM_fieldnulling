@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     try:
         with  FieldLineService(args.i) as service:
-            OPM_control = OPMQuspinControl(server_ip = "101001")
+            OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
             comp_coils = CompFieldControl()
             start_time = time.time()
 
