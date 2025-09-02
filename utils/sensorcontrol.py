@@ -8,6 +8,7 @@ import threading
 import struct
 import select
 import numpy as np
+from collections import deque
 
 import os
 import logging
@@ -17,7 +18,7 @@ class OPMQuspinControl:
 
         # Initialize connection data
         self.connections = {
-            8089: {"connected": False, "socket": None, "name": "Data Stream", "data": [], "total_samples": 0, "data_buffer": []},
+            8089: {"connected": False, "socket": None, "name": "Data Stream", "data": [], "total_samples": 0, "data_buffer": deque()},
             8090: {"connected": False, "socket": None, "name": "Text Display 1", "show_first_page": True},
             8091: {"connected": False, "socket": None, "name": "Text Display 2"},
             8092: {"connected": False, "socket": None, "name": "Command Channel"}
