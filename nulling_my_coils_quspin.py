@@ -12,11 +12,11 @@ import numpy as np
 from utils.compcoils import CompFieldControl
 from utils.sensorcontrol import OPMQuspinControl
     
-from utils.data_handling import starting_point_coil_vals, save_array_to_txt
+#from utils.data_handling import starting_point_coil_vals, save_array_to_txt
 
 from fieldline_api.fieldline_service import FieldLineService
 
-from nulling_my_coils import create_matrix_of_coil_vals, remove_failed_chs, collect_data_array
+#from nulling_my_coils import create_matrix_of_coil_vals, remove_failed_chs, collect_data_array
 
 stream_handler = logging.StreamHandler()
 logging.basicConfig(
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
 
     rescale_steps = np.array([1, 1, 1, 0.15, 0.15, 0.15, 0.15, 0.15])
-    coil_parameters = starting_point_coil_vals(output_path, which = args.start_coil_vals)
+    #coil_parameters = starting_point_coil_vals(output_path, which = args.start_coil_vals)
 
 
     try:
