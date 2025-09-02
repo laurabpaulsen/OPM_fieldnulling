@@ -14,7 +14,7 @@ from utils.sensorcontrol import OPMQuspinControl
     
 #from utils.data_handling import starting_point_coil_vals, save_array_to_txt
 
-from fieldline_api.fieldline_service import FieldLineService
+#from fieldline_api.fieldline_service import FieldLineService
 
 #from nulling_my_coils import create_matrix_of_coil_vals, remove_failed_chs, collect_data_array
 
@@ -66,27 +66,27 @@ if __name__ == "__main__":
 
 
     try:
-        with  FieldLineService(args.i) as service:
-            OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
-            comp_coils = CompFieldControl()
-            start_time = time.time()
+  
+        OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
+        comp_coils = CompFieldControl()
+        start_time = time.time()
 
-            try:
-                OPM_control.connect_all_ports()  # Connect to all sensor ports (8089–8091)
+        try:
+            OPM_control.connect_all_ports()  # Connect to all sensor ports (8089–8091)
 
-                # Collect and print a few frames
-                n_frames_to_print = 5
-                for _ in range(n_frames_to_print):
-                    if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
-                        frame = OPM_control.connections[8089]["last_frame"]
-                        if frame is not None:
-                            print("Latest frame from Data Stream port 8089:")
-                            print(frame)
-                    # Sleep a bit to allow next frame to arrive
-                    time.sleep(0.1)
+            # Collect and print a few frames
+            n_frames_to_print = 5
+            for _ in range(n_frames_to_print):
+                if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
+                    frame = OPM_control.connections[8089]["last_frame"]
+                    if frame is not None:
+                        print("Latest frame from Data Stream port 8089:")
+                        print(frame)
+                # Sleep a bit to allow next frame to arrive
+                time.sleep(0.1)
 
-            except Exception as e:
-                logging.error(f"Error during OPM control operations: {str(e)}")
+        except Exception as e:
+            logging.error(f"Error during OPM control operations: {str(e)}")
 
     except ConnectionError as e:
         logging.error(f"Failed to connect: {str(e)}")
