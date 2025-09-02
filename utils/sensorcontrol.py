@@ -14,7 +14,7 @@ import os
 import logging
 
 class OPMQuspinControl:
-    def __init__(self, server_ip, history_seconds=10):
+    def __init__(self, server_ip, history_seconds=1):
 
         # Initialize connection data
         self.connections = {
@@ -26,7 +26,7 @@ class OPMQuspinControl:
         # Load commands
         #self.commands = self.load_commands("N1_Commands.txt")
         self.server_ip = server_ip
-        self.history_seconds = 10  # Default history length
+        self.history_seconds = history_seconds  # Default history length
 
     def log_message(self, message):
         logging.info(message)
@@ -192,7 +192,6 @@ class OPMQuspinControl:
 
             # Parse payload into float32 array
             data_array = np.frombuffer(payload, dtype=np.float32).reshape(rows * 4, cols_adjusted)
-            print(data_array.shape)
             # Store as rolling history
             self.connections[port]["data_buffer"].append(data_array)
             self.connections[port]["total_samples"] += cols_adjusted
