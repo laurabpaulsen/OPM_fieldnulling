@@ -64,33 +64,31 @@ if __name__ == "__main__":
     #coil_parameters = starting_point_coil_vals(output_path, which = args.start_coil_vals)
 
 
-    try:
-        OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
-        comp_coils = CompFieldControl()
-        start_time = time.time()
 
-        OPM_control.connect_all_ports()
+    OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
+    comp_coils = CompFieldControl()
+    start_time = time.time()
 
-        OPM_control.send_command("Sensor|Auto Start")
+    OPM_control.connect_all_ports()
 
-        # check on the text ports
-        for port in [8090, 8091]:
-            if port in OPM_control.connections and "last_frame" in OPM_control.connections[port]:
-                frame = OPM_control.connections[port]["last_frame"]
-                if frame is not None:
-                    print(f"Latest frame from Text Display port {port}:")
-                    print(frame)
+    OPM_control.send_command("Sensor|Auto Start")
 
-        try:
-            # Collect and print a few frames
-            n_frames_to_print = 5
-            
-            for _ in range(5):
-                frame = OPM_control.connections[8089].get("last_frame")
-                if frame is not None:
-                    print(f"Latest frame: with shape {frame.shape}")
+    # check on the text ports
+    for port in [8090, 8091]:
+        if port in OPM_control.connections and "last_frame" in OPM_control.connections[port]:
+            frame = OPM_control.connections[port]["last_frame"]
+            if frame is not None:
+                print(f"Latest frame from Text Display port {port}:")
+                print(frame)
 
-                    print(frame[3]*10000)
+
+    n_frames_to_print = 5
+
+    for _ in range(n_frames_to_print):
+        frame = OPM_control.connections[8089].get("last_frame")
+        if frame is not None:
+            print(f"Latest frame: with shape {frame.shape}")
+            print(frame[3]*10000)
 
                 #if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
                 #    frame = OPM_control.connections[8089]["last_frame"]
@@ -98,11 +96,7 @@ if __name__ == "__main__":
                 #        print("Latest frame from Data Stream port 8089:")
                 #        print(frame)
                 # Sleep a bit to allow next frame to arrive
-                time.sleep(0.1)
+            time.sleep(0.1)
 
-        except Exception as e:
-            logging.error(f"Error during OPM control operations: {str(e)}")
-
-    except ConnectionError as e:
-        logging.error(f"Failed to connect: {str(e)}")
+    OPM_control.disconnect_all_ports()
 

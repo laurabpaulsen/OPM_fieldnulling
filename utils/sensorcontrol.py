@@ -61,13 +61,6 @@ class OPMQuspinControl:
                 self.disconnect(port)
         self.log_message("Disconnected from all ports")
 
-    def toggle_connection(self, port):
-        """Toggle connection state for a specific port"""
-        if not self.connections[port]["connected"]:
-            self.connect(port)
-        else:
-            self.disconnect(port)
-
     def connect(self, port):
         """Connect to a specific port."""
         try:
