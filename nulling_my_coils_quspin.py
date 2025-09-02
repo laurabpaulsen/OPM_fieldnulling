@@ -69,10 +69,11 @@ if __name__ == "__main__":
         comp_coils = CompFieldControl()
         start_time = time.time()
 
+        OPM_control.connect_all_ports()
+
+        OPM_control.send_command("Sensor|Auto Start")
+
         try:
-            print("connecting the ports!")
-            # connect to port 8089
-            OPM_control.connect(8089)
             # Collect and print a few frames
             n_frames_to_print = 5
             
@@ -81,7 +82,7 @@ if __name__ == "__main__":
                 if frame is not None:
                     print(f"Latest frame: with shape {frame.shape}")
 
-                    print(frame[:5]*10000)
+                    print(frame[3]*10000)
 
                 #if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
                 #    frame = OPM_control.connections[8089]["last_frame"]
