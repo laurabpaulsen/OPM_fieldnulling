@@ -76,11 +76,12 @@ if __name__ == "__main__":
             # Collect and print a few frames
             n_frames_to_print = 5
             for _ in range(n_frames_to_print):
-                if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
-                    frame = OPM_control.connections[8089]["last_frame"]
-                    if frame is not None:
-                        print("Latest frame from Data Stream port 8089:")
-                        print(frame)
+                OPM_control.receive_data(8089)
+                #if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
+                #    frame = OPM_control.connections[8089]["last_frame"]
+                #    if frame is not None:
+                #        print("Latest frame from Data Stream port 8089:")
+                #        print(frame)
                 # Sleep a bit to allow next frame to arrive
                 time.sleep(0.1)
 
