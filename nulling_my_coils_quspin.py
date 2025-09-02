@@ -73,6 +73,14 @@ if __name__ == "__main__":
 
         OPM_control.send_command("Sensor|Auto Start")
 
+        # check on the text ports
+        for port in [8090, 8091]:
+            if port in OPM_control.connections and "last_frame" in OPM_control.connections[port]:
+                frame = OPM_control.connections[port]["last_frame"]
+                if frame is not None:
+                    print(f"Latest frame from Text Display port {port}:")
+                    print(frame)
+
         try:
             # Collect and print a few frames
             n_frames_to_print = 5

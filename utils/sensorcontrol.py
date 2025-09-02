@@ -237,17 +237,28 @@ class OPMQuspinControl:
         return ''.join(chr(b) if (32 <= b <= 126) or b == 20 else '' for b in uint8_array)
 
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
-        """Process text data from the OPM sensor"""
-        try:
-            # Convert payload to string
-            text = self.uint8_array_to_string(payload)
+            """Process text data for display"""
+            try:
+                if dual_page:
+                    # Handle dual page data (port 8090)
+                    half_cols = cols // 2
+                    data_array = np.frombuffer(payload, dtype=np.uint8).reshape(rows*2, half_cols)
+                    data_3d = np.zeros((2, rows, half_cols), dtype=np.uint8)
+                    data_3d[0] = data_array[:rows]
+                    data_3d[1] = data_array[rows:]
+                    
+                    page = 0 if self.connections[port]["show_first_page"] else 1
+                    string_array = [self.uint8_array_to_string(row) for row in data_3d[page]]
+                else:
+                    # Handle single page data (port 8091)
+                    data_array = [payload[i:i+cols] for i in range(0, len(payload), cols)]
+                    string_array = [self.uint8_array_to_string(row) for row in data_array]
 
-            # Store latest frame
-            self.connections[port]["last_frame"] = text
-            print(f"Received text on port {port}: {text}")
+                # Store latest frame
+                self.connections[port]["last_frame"] = string_array
 
-        except Exception as e:
-            self.log_message(f"Error processing text data: {e}")
+            except Exception as e:
+                self.log_message(f"Error processing text data: {e}")
 
     def on_history_change(self, event=None):
         """Handle history length change"""
