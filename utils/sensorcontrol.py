@@ -28,6 +28,11 @@ class OPMQuspinControl:
         self.server_ip = server_ip
         self.history_seconds = history_seconds  # Default history length
 
+        self.channel_names = [f"X{i+1}" for i in range(64)] + \
+                     [f"Y{i+1}" for i in range(64)] + \
+                     [f"Z{i+1}" for i in range(64)] + \
+                     [f"AUX{i+1}" for i in range(64)]
+
     def log_message(self, message):
         logging.info(message)
 
@@ -133,7 +138,6 @@ class OPMQuspinControl:
             
         except Exception as e:
             self.log_message(f"Failed to send data: {e}")
-
 
     def receive_data(self, port):
         """Receive and process data from a specific port"""
