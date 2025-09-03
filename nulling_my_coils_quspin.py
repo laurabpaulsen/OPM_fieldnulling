@@ -71,12 +71,16 @@ if __name__ == "__main__":
 
     OPM_control.connect_all_ports()
 
-    OPM_control.send_command("Sensor|Ortho & Calibrate")
+    #OPM_control.send_command("Sensor|Ortho & Calibrate")
+    time.sleep(2)
+    for i in range(5):
+        # get the data in the databuffer
+        data = OPM_control.connections[8089].get("data_buffer")
+        if data:
+            print(f"Data in buffer: {data} \n shape: {data.shape}")
 
-     # check if sensors are calibrated on 8090
-    for i in range(10):
-        print(OPM_control.sensor_status)
-        time.sleep(3)
+        time.sleep(2)
+
 
     """
     n_frames_to_print = 5
