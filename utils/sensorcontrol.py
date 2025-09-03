@@ -310,10 +310,11 @@ class OPMQuspinControl:
             # check if there is a 1 or zero after the delimiter
             try:
                 parts = row.split(delimiter)
+                print(parts)
                 status = parts[1][0]
                 status_all.append(status)
             except IndexError:
                 print(f"Error processing row: {row}")
 
         # Print all statuses at once
-        print(f"{sum(1 for s in status_all if s == '1')} out of {len(status_all)} sensors finished {value}")
+        print(f"{sum(1 for s in status_all if s == '1')} out of {len(status_all)} sensors {value}")
