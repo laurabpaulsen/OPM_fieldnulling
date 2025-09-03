@@ -295,7 +295,11 @@ class OPMQuspinControl:
     def check_sensor_status(self, value="calibration"):
 
         delimiters = {
-            "calibration": "CBS"
+            "calibration": "CBS",
+            "laser_locked": "LLS",
+            "receiving_data": "CNT",
+            "disabled": "DIS",
+            "active_to_commands": "ACT"
             }
 
         delimiter = delimiters.get(value)
