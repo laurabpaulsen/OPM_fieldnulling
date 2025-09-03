@@ -73,6 +73,8 @@ if __name__ == "__main__":
 
     OPM_control.send_command("Sensor|Auto Start")
 
+    
+
     # check on the text ports
     for port in [8090, 8091]:
         if port in OPM_control.connections and "last_frame" in OPM_control.connections[port]:
@@ -88,7 +90,7 @@ if __name__ == "__main__":
         frame = OPM_control.connections[8089].get("last_frame")
         if frame is not None:
             print(f"Latest frame: with shape {frame.shape}")
-            print(frame[3]*10000)
+            print(frame[20])
 
                 #if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
                 #    frame = OPM_control.connections[8089]["last_frame"]
