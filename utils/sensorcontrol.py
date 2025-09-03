@@ -301,6 +301,7 @@ class OPMQuspinControl:
         delimiter = delimiters.get(value)
 
         for row in self.connections[8090]["page1"]:
+            print(row)
             # check if there is a 1 or zero after the delimiter
             parts = row.split(delimiter)
             status = parts[1][0]
