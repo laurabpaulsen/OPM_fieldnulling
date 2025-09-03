@@ -71,12 +71,15 @@ if __name__ == "__main__":
 
     OPM_control.connect_all_ports()
 
-    OPM_control.send_command("Sensor|Auto Start")
+    #OPM_control.send_command("Sensor|Auto Start")
 
   
+    time.sleep(2)
 
+     # check if sensors are calibrated on 8090
     for i in range(10):
         OPM_control.check_sensor_status("calibration")
+        time.sleep(3)
 
     """
     n_frames_to_print = 5
