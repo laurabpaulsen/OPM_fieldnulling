@@ -62,6 +62,9 @@ if __name__ == "__main__":
 
 
 
+
+
+
     OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
     #comp_coils = CompFieldControl()
     start_time = time.time()
