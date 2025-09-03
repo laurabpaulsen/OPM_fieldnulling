@@ -308,6 +308,9 @@ class OPMQuspinControl:
 
         for row in self.connections[8090]["page2"]:    
             # check if there is a 1 or zero after the delimiter
+            # add a space to the beginning of the row to avoid index errors when the delimiter is the first character
+            row = " " + row 
+
             try:
                 parts = row.split(delimiter)
                 print(parts)
