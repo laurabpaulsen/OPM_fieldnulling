@@ -300,7 +300,7 @@ class OPMQuspinControl:
 
         delimiter = delimiters.get(value)
 
-        for row in self.connections[8090]["page1"]:
+        for row in self.connections[8090]["page2"]:
             print(f"here is row: {row}")
     
             # check if there is a 1 or zero after the delimiter
