@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
         # average over time dimension
         data_active_mean = data_active.mean(axis=2)
-        print(f"Data active sensors (averaged): {data_active} \n shape: {data_active.shape}")
+        print(f"Data active sensors (averaged): {data_active_mean} \n shape: {data_active_mean.shape}")
 
         time.sleep(2)
 
