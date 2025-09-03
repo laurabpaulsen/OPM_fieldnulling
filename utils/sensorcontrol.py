@@ -250,14 +250,10 @@ class OPMQuspinControl:
                     # Handle dual page data (port 8090)
                     half_cols = cols // 2
                     data_array = np.frombuffer(payload, dtype=np.uint8).reshape(rows*2, half_cols)
-                    data_3d = np.zeros((2, rows, half_cols), dtype=np.uint8)
-                    data_3d[0] = data_array[:rows]
-                    data_3d[1] = data_array[rows:]
 
+                    self.update_sensor_status(data_array[rows:])
 
-                    self.update_sensor_status(data_3d[1])
-
-                    string_array = [self.uint8_array_to_string(row) for row in data_3d[0]]
+                    string_array = [self.uint8_array_to_string(row) for row in data_array[:rows]]
                     self.connections[port]["page1"] = string_array
 
                 else:
