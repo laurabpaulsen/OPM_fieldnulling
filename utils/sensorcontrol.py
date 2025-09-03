@@ -249,9 +249,9 @@ class OPMQuspinControl:
                     half_cols = cols // 2
                     data_array = np.frombuffer(payload, dtype=np.uint8).reshape(rows*2, half_cols)
 
-                    self.update_sensor_status(data_array[rows:])
+                    self.update_sensor_status(data_array[:rows])
 
-                    string_array = [self.uint8_array_to_string(row) for row in data_array[:rows]]
+                    string_array = [self.uint8_array_to_string(row) for row in data_array[rows:]]
                     self.connections[port]["page1"] = string_array
 
                 else:
