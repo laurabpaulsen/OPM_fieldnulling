@@ -26,8 +26,6 @@ logging.basicConfig(
     handlers=[stream_handler]
 )
 
-   
-
 def parse_args():
     parser = ap.ArgumentParser()
     parser.add_argument('--nulling_type', type=str, default='full', help='Whether to complete the "full" nulling procedure or "finetune"')
@@ -58,7 +56,6 @@ if __name__ == "__main__":
     if use_all_data_for_updating_fields:
         all_coil_configurations = []
         all_data_arrays = []
-
 
     rescale_steps = np.array([1, 1, 1, 0.15, 0.15, 0.15, 0.15, 0.15])
     #coil_parameters = starting_point_coil_vals(output_path, which = args.start_coil_vals)
