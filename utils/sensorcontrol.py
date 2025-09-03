@@ -292,15 +292,13 @@ class OPMQuspinControl:
         except Exception as e:
             print(f"Error during shutdown: {e}")
 
-    def check_status(self, value="calibration"):
+    def check_sensor_status(self, value="calibration"):
 
         delimiters = {
             "calibration": "CBS"
             }
 
         delimiter = delimiters.get(value)
-
-        print(self.connections[8090]["page1"])
 
         for row in self.connections[8090]["page1"]:
             # check if there is a 1 or zero after the delimiter
