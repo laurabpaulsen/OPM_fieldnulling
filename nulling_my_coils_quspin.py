@@ -94,7 +94,7 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
 
         # so we have sensor and channel dimensions
         n, n_samples = data_tmp.shape[0], data_tmp.shape[1]
-        data_tmp = data_tmp.reshape(3, int(n/3), n_samples)
+        data_tmp = data_tmp.reshape(int(n/3), 3, n_samples)
 
         # only get active sensors
         data_active = data_tmp[:, active_sensors, :]
