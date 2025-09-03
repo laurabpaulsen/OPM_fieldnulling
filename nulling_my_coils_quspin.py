@@ -78,12 +78,24 @@ if __name__ == "__main__":
     active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
     print(active_sensors)
 
+    # which channel indices does it correspond to?
+    
+
     time.sleep(2)
     for i in range(5):
         # get the data in the databuffer
         data = OPM_control.connections[8089].get("data_buffer")
 
+        n_channels, n_samples = data.shape[0], data.shape[1]
+
+        # reshape so each channel is there
+        data = data.reshape(3, n_channels/3, n_samples)
+
         print(f"Data in buffer: {data} \n shape: {data.shape}")
+
+        # only get active sensors
+        data_active = data[:, active_sensors, :]
+        print(f"Data active sensors: {data_active} \n shape: {data_active.shape}")
 
         time.sleep(2)
 
