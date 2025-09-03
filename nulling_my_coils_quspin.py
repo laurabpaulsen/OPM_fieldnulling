@@ -86,6 +86,8 @@ if __name__ == "__main__":
         # get the data in the databuffer
         data = OPM_control.connections[8089].get("data_buffer")
 
+        data = data[:64*3] # ignore AUX
+
         n_channels, n_samples = data.shape[0], data.shape[1]
 
         # reshape so each channel is there
