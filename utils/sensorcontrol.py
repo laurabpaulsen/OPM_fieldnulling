@@ -300,11 +300,16 @@ class OPMQuspinControl:
 
         delimiter = delimiters.get(value)
 
+        status_all = []
+
         for row in self.connections[8090]["page2"]:    
             # check if there is a 1 or zero after the delimiter
             try:
                 parts = row.split(delimiter)
                 status = parts[1][0]
-                print(f"Status: {status}")
+                status_all.append(status)
             except IndexError:
                 print(f"Error processing row: {row}")
+
+        # Print all statuses at once
+        print(f"{sum(1 for s in status_all if s == '1')} out of {len(status_all)} sensors finished {value}")
