@@ -197,6 +197,10 @@ class OPMQuspinControl:
             # Store latest frame
             self.connections[port]["last_frame"] = data_array
 
+            # Append to buffer
+            self.connections[port]["data_buffer"].append(data_array)
+            self.connections[port]["total_samples"] += data_array.shape[1]
+
             # Trim buffer if too long
             max_samples = self.history_seconds * cols_adjusted
             while self.connections[port]["total_samples"] > max_samples and len(self.connections[port]["data_buffer"]) > 0:
