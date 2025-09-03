@@ -63,6 +63,7 @@ if __name__ == "__main__":
 
 
     compcoils = CompFieldControl()
+    compcoils.set_coil_values([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
 
 
     OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
