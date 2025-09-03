@@ -19,7 +19,7 @@ class OPMQuspinControl:
 
         # Initialize connection data
         self.connections = {
-            8089: {"connected": False, "socket": None, "name": "Data Stream", "data": [], "total_samples": 0, "data_buffer": deque()},
+            8089: {"connected": False, "socket": None, "name": "Data Stream", "data": [], "total_samples": 0, "data_buffer": None},
             8090: {"connected": False, "socket": None, "page1": []},
             8091: {"connected": False, "socket": None, "name": "Text Display 2"},
             8092: {"connected": False, "socket": None, "name": "Command Channel"}
@@ -194,17 +194,22 @@ class OPMQuspinControl:
             # check if any data is not zero
 
             # Store latest frame
-            self.connections[port]["last_frame"] = data_array
+            self.connections[port]["last_frame"] = data_array # shape is channels, time
             print(data_array.shape)
 
             # Append to buffer
-            self.connections[port]["data_buffer"].append(data_array)
+            if self.connections[port]["data_buffer"] is None:
+                self.connections[port]["data_buffer"] = data_array
+            else:
+                self.connections[port]["data_buffer"] = np.concatenate((self.connections[port]["data_buffer"], data_array), axis=1)
+
             self.connections[port]["total_samples"] += data_array.shape[-1]
 
             # Trim buffer if too long
-            while self.connections[port]["total_samples"] > self.max_samples and len(self.connections[port]["data_buffer"]) > 0:
-                oldest = self.connections[port]["data_buffer"].popleft()
-                self.connections[port]["total_samples"] -= oldest.shape[-1]
+            if self.connections[port]["total_samples"] > self.max_samples and self.connections[port]["data_buffer"] is not None:
+                excess = self.connections[port]["total_samples"] - self.max_samples
+                self.connections[port]["data_buffer"] = self.connections[port]["data_buffer"][:, excess:]
+                self.connections[port]["total_samples"] = self.max_samples
 
         except Exception as e:
             self.log_message(f"Error processing graph data: {e}")
