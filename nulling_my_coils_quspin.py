@@ -97,7 +97,7 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
         data_tmp = data_tmp.reshape(int(n/3), 3, n_samples)
 
         # only get active sensors
-        data_active = data_tmp[:, active_sensors, :]
+        data_active = data_tmp[active_sensors, :, :]
 
         # average over time dimension
         data_active_mean = data_active.mean(axis=2)
