@@ -159,7 +159,7 @@ if __name__ == "__main__":
     
 
     coil_vals, collected_data_array = collect_data_array(
-        np.array([0, 0, 0, 0, 0, 0, 0]), rescale_steps, compcoils, OPM_control, active_sensors)
+        np.array([0, 0, 0, 0, 0, 0, 0, 0]), rescale_steps, compcoils, OPM_control, active_sensors)
 
     """
     n_frames_to_print = 5
