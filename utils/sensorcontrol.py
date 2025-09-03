@@ -195,6 +195,7 @@ class OPMQuspinControl:
 
             # Store latest frame
             self.connections[port]["last_frame"] = data_array
+            print(data_array.shape)
 
             # Append to buffer
             self.connections[port]["data_buffer"].append(data_array)
