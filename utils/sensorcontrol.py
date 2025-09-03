@@ -237,7 +237,7 @@ class OPMQuspinControl:
         string_rows = [self.uint8_array_to_string(row) for row in status_data]
 
         for i, row in enumerate(string_rows):
-            print(row)
+            #print(row)
             values = re.findall(r'([A-Z]{3})(-?\d+(?:\.\d+)?)', row)
             for prefix, number in values:
                 self.sensor_status[i] = {prefix: number}
