@@ -76,9 +76,9 @@ if __name__ == "__main__":
     for i in range(5):
         # get the data in the databuffer
         data = OPM_control.connections[8089].get("data_buffer")
-        print(data)
-        #if data:
-        #    print(f"Data in buffer: {data} \n shape: {data.shape}")
+
+        if data:
+            print(f"Data in buffer: {data} \n shape: {data.shape}")
 
         time.sleep(2)
 
