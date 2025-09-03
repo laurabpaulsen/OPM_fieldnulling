@@ -85,19 +85,19 @@ if __name__ == "__main__":
     for i in range(5):
         # get the data in the databuffer
         data = OPM_control.connections[8089].get("data_buffer")
-
         data = data[:64*3] # ignore AUX
 
+        # so we have sensor and channel dimensions 
         n_channels, n_samples = data.shape[0], data.shape[1]
-
-        # reshape so each channel is there
         data = data.reshape(3, int(n_channels/3), n_samples)
-
-        print(f"Data in buffer: {data} \n shape: {data.shape}")
 
         # only get active sensors
         data_active = data[:, active_sensors, :]
         print(f"Data active sensors: {data_active} \n shape: {data_active.shape}")
+
+        # average over time dimension
+        data_active_mean = data_active.mean(axis=2)
+        print(f"Data active sensors (averaged): {data_active} \n shape: {data_active.shape}")
 
         time.sleep(2)
 
