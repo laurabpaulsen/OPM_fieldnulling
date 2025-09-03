@@ -12,6 +12,7 @@ from collections import deque
 
 import os
 import logging
+import re
 
 class OPMQuspinControl:
     def __init__(self, server_ip, history_seconds=1):
@@ -19,7 +20,7 @@ class OPMQuspinControl:
         # Initialize connection data
         self.connections = {
             8089: {"connected": False, "socket": None, "name": "Data Stream", "data": [], "total_samples": 0, "data_buffer": deque()},
-            8090: {"connected": False, "socket": None, "page1": [], "page2": []},
+            8090: {"connected": False, "socket": None, "page1": []},
             8091: {"connected": False, "socket": None, "name": "Text Display 2"},
             8092: {"connected": False, "socket": None, "name": "Command Channel"}
         }
@@ -32,6 +33,8 @@ class OPMQuspinControl:
                      [f"Y{i+1}" for i in range(64)] + \
                      [f"Z{i+1}" for i in range(64)] + \
                      [f"AUX{i+1}" for i in range(64)]
+        
+        self.sensor_status = {}
 
     def log_message(self, message):
         logging.info(message)
@@ -229,6 +232,17 @@ class OPMQuspinControl:
         """Convert uint8 array to string, filtering non-displayable characters"""
         return ''.join(chr(b) if (32 <= b <= 126) or b == 20 else '' for b in uint8_array)
 
+    def update_sensor_status(self, status_data):
+        """Update sensor status information"""
+
+        data_string = self.uint8_array_to_string(status_data)
+
+        for i, row in enumerate(data_string):
+            values = re.findall(r'([A-Z]{3})(\d)', row)
+            # Process each found value as needed
+            for prefix, number in values:
+                self.sensor_status[i] = {prefix: number}
+
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
             """Process text data for display"""
             try:
@@ -239,10 +253,13 @@ class OPMQuspinControl:
                     data_3d = np.zeros((2, rows, half_cols), dtype=np.uint8)
                     data_3d[0] = data_array[:rows]
                     data_3d[1] = data_array[rows:]
-                    
-                    for page in range(2):
-                        string_array = [self.uint8_array_to_string(row) for row in data_3d[page]]
-                        self.connections[port][f"page{page+1}"] = string_array
+
+
+                    self.update_sensor_status(data_3d[1])
+
+                    string_array = [self.uint8_array_to_string(row) for row in data_3d[0]]
+                    self.connections[port]["page1"] = string_array
+
                 else:
                     # Handle single page data (port 8091)
                     data_array = [payload[i:i+cols] for i in range(0, len(payload), cols)]

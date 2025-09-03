@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
      # check if sensors are calibrated on 8090
     for i in range(10):
-        OPM_control.check_sensor_status("calibration")
+        print(OPM_control.sensor_status)
         time.sleep(3)
 
     """
