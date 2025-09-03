@@ -239,8 +239,8 @@ class OPMQuspinControl:
         for i, row in enumerate(string_rows):
             #print(row)
             values = re.findall(r'([A-Z]{3})(-?\d+(?:\.\d+)?)', row)
-            for prefix, number in values:
-                self.sensor_status[i] = {prefix: number}
+
+            self.sensor_status[i] = {prefix: number for prefix, number in values}
 
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
             """Process text data for display"""
