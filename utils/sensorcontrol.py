@@ -237,6 +237,7 @@ class OPMQuspinControl:
         string_rows = [self.uint8_array_to_string(row) for row in status_data]
 
         for i, row in enumerate(string_rows):
+            print(row)
             values = re.findall(r'([A-Z]{3})(\d)', row)
             for prefix, number in values:
                 self.sensor_status[i] = {prefix: number}
@@ -249,9 +250,9 @@ class OPMQuspinControl:
                     half_cols = cols // 2
                     data_array = np.frombuffer(payload, dtype=np.uint8).reshape(rows*2, half_cols)
 
-                    self.update_sensor_status(data_array[:rows])
+                    self.update_sensor_status(data_array[rows:])
 
-                    string_array = [self.uint8_array_to_string(row) for row in data_array[rows:]]
+                    string_array = [self.uint8_array_to_string(row) for row in data_array[:rows]]
                     self.connections[port]["page1"] = string_array
 
                 else:
