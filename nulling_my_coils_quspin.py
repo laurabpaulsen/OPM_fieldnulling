@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
 
     compcoils = CompFieldControl()
-    compcoils.set_coil_values([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
+    #compcoils.set_coil_values([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
 
 
     OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     
 
     coil_vals, collected_data_array = collect_data_array(
-        [0, 0, 0, 0, 0, 0, 0], rescale_steps, compcoils, OPM_control, active_sensors)
+        np.array([0, 0, 0, 0, 0, 0, 0]), rescale_steps, compcoils, OPM_control, active_sensors)
 
     """
     n_frames_to_print = 5
