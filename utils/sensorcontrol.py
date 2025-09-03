@@ -234,12 +234,10 @@ class OPMQuspinControl:
 
     def update_sensor_status(self, status_data):
         """Update sensor status information"""
+        string_rows = [self.uint8_array_to_string(row) for row in status_data]
 
-        data_string = self.uint8_array_to_string(status_data)
-
-        for i, row in enumerate(data_string):
+        for i, row in enumerate(string_rows):
             values = re.findall(r'([A-Z]{3})(\d)', row)
-            # Process each found value as needed
             for prefix, number in values:
                 self.sensor_status[i] = {prefix: number}
 
