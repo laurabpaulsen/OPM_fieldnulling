@@ -89,7 +89,7 @@ if __name__ == "__main__":
         n_channels, n_samples = data.shape[0], data.shape[1]
 
         # reshape so each channel is there
-        data = data.reshape(3, n_channels/3, n_samples)
+        data = data.reshape(3, int(n_channels/3), n_samples)
 
         print(f"Data in buffer: {data} \n shape: {data.shape}")
 
