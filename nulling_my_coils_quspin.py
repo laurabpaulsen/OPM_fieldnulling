@@ -9,7 +9,7 @@ from pathlib import Path
 import argparse as ap
 
 import numpy as np
-#from utils.compcoils import CompFieldControl
+from utils.compcoils import CompFieldControl
 from utils.sensorcontrol import OPMQuspinControl
     
 #from utils.data_handling import starting_point_coil_vals, save_array_to_txt
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
 
 
-
+    compcoils = CompFieldControl()
 
 
     OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
