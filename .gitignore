@@ -209,3 +209,4 @@ __marimo__/
 
 utils/quspinAPI/*
 utils/coilAPI/*
+.DS_store
