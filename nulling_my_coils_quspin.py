@@ -83,7 +83,7 @@ if __name__ == "__main__":
                 print(f"Latest frame from Text Display port {port}:")
                 print(frame)
 
-
+    """
     n_frames_to_print = 5
 
     for _ in range(n_frames_to_print):
@@ -99,6 +99,6 @@ if __name__ == "__main__":
                 #        print(frame)
                 # Sleep a bit to allow next frame to arrive
             time.sleep(0.1)
-
+    """
     OPM_control.disconnect_all_ports()
 

@@ -249,6 +249,7 @@ class OPMQuspinControl:
 
                 # Store latest frame
                 self.connections[port]["last_frame"] = string_array
+                print(string_array)
 
             except Exception as e:
                 self.log_message(f"Error processing text data: {e}")
