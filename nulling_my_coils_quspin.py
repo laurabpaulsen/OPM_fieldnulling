@@ -79,7 +79,7 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
     coil_values = create_matrix_of_coil_vals(start_vec, rescale_step)
 
     # preallocate memory for data collected from changing the coil parameters
-    data = np.empty((active_sensors, 3, len(start_vec)+1), float) 
+    data = np.empty((len(active_sensors), 3, len(start_vec)+1), float) 
 
 
     for j, coil_values_tmp in enumerate(coil_values):
