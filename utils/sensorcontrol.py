@@ -302,7 +302,11 @@ class OPMQuspinControl:
 
         for row in self.connections[8090]["page1"]:
             print(f"here is row: {row}")
+    
             # check if there is a 1 or zero after the delimiter
-            parts = row.split(delimiter)
-            status = parts[1][0]
-            print(f"Status: {status}")
+            try:
+                parts = row.split(delimiter)
+                status = parts[1][0]
+                print(f"Status: {status}")
+            except IndexError:
+                print(f"Error processing row: {row}")
