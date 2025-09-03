@@ -71,7 +71,13 @@ if __name__ == "__main__":
 
     OPM_control.connect_all_ports()
 
-    #OPM_control.send_command("Sensor|Ortho & Calibrate")
+    OPM_control.send_command("Sensor|Ortho & Calibrate") 
+    time.sleep(2)
+
+    # get the keys where sensor_status[key]["LLS"] is "1"
+    active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
+    print(active_sensors)
+
     time.sleep(2)
     for i in range(5):
         # get the data in the databuffer
