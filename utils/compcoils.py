@@ -7,7 +7,7 @@ sys.path.append('../..')
 sys.path.append('coilAPI')
 from utils.com_monitor import ComMonitorThread
 
-from .optim import nonneg_residual_lsq_algorithm
+from optim import nonneg_residual_lsq_algorithm
 
 class CompFieldControl:
     def __init__(self, min_voltage = -10, max_voltage = 10, optimisation_algorithm = nonneg_residual_lsq_algorithm):
@@ -76,3 +76,6 @@ class CompFieldControl:
         self.setOffset(6, values[6]) 
         self.setOffset(7, values[7]) 
         time.sleep(2) # how important was this delay again????
+
+    def close(self):
+        self.ser_monitor.stop()

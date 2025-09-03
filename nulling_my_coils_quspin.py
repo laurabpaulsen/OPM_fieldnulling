@@ -26,6 +26,89 @@ logging.basicConfig(
     handlers=[stream_handler]
 )
 
+
+def create_matrix_of_coil_vals(start_vec, rescale_step):
+    """
+    Generates a matrix of coil values.
+
+    This function constructs a lower triangular matrix with values below the diagonal, 
+    scales it using a given `rescale_step`, adds an initial `start_vec`, and appends 
+    a column of ones.
+
+    Parameters:
+    -----------
+    start_vec : array-like
+        A 1D array representing the starting values.
+    
+    rescale_step : array-like
+        A 1D array with the same length as `start_vec`, specifying the scaling factors 
+        for each column in the lower triangular matrix.
+
+    Returns:
+    --------
+    coil_values : numpy.ndarray
+        A (len(start_vec) + 1, len(start_vec) + 1) matrix where:
+        - The first `len(start_vec)` columns define the adjusted values based on 
+          `start_vec` and `rescale_step`.
+        - The last column is filled with ones.
+    """
+    n_rows = len(start_vec) + 1
+    n_cols = len(start_vec)
+
+    # Create a lower triangular matrix with ones below the diagonal
+    lower_tri_matrix = np.tril(np.ones((n_rows, n_cols)), -1)
+
+    # Scale the lower triangular matrix using rescale_step
+    scaled_matrix = lower_tri_matrix * rescale_step
+
+    # Add start_vec to each row
+    adjusted_matrix = scaled_matrix + start_vec
+
+    # Append a column of ones
+    coil_values = np.concatenate((adjusted_matrix, np.ones((n_rows, 1))), axis=1)
+
+    return coil_values
+
+
+def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldControl, OPM_control:OPMQuspinControl, active_sensors):
+    """
+    This function assumes that the coil values are already set to the start vec. 
+    Then the coil values are changed one at a time according to the step size and records the fields (x, y, z) across the sensors. 
+    """
+    # prepare a matrix with the coil values at each iteration when we change the coil parameters one at a time. The first row is the start vec.
+    coil_values = create_matrix_of_coil_vals(start_vec, rescale_step)
+
+    # preallocate memory for data collected from changing the coil parameters
+    data = np.empty((active_sensors, 3, len(start_vec)+1), float) 
+
+
+    for j, coil_values_tmp in enumerate(coil_values):
+        # add 1 stepsize to each of the values in start_vec for each component of the field
+        if j != 0: # as we have already set the field to the starting value we will not change it here  
+            compcoils_control.setOffset(j-1, coil_values_tmp[j-1])
+            
+        #opm_main.fine_zero_sensors()
+        # get the data in the databuffer
+        data_tmp = OPM_control.connections[8089].get("data_buffer")
+        data_tmp = data_tmp[:64*3] # ignore AUX
+
+        # so we have sensor and channel dimensions
+        n, n_samples = data_tmp.shape[0], data_tmp.shape[1]
+        data_tmp = data_tmp.reshape(3, int(n/3), n_samples)
+
+        # only get active sensors
+        data_active = data_tmp[:, active_sensors, :]
+
+        # average over time dimension
+        data_active_mean = data_active.mean(axis=2)
+        data[:,:,j] = data_active_mean
+
+
+    return coil_values, data
+
+
+
+
 def parse_args():
     parser = ap.ArgumentParser()
     parser.add_argument('--nulling_type', type=str, default='full', help='Whether to complete the "full" nulling procedure or "finetune"')
@@ -35,6 +118,7 @@ def parse_args():
     args = parser.parse_args()
     
     return args
+
 
 
 if __name__ == "__main__":
@@ -51,11 +135,6 @@ if __name__ == "__main__":
     elif args.nulling_type == "finetune":
         n_iterations = 1
 
-    use_all_data_for_updating_fields = True # added functionality - needs to be tested
-
-    if use_all_data_for_updating_fields:
-        all_coil_configurations = []
-        all_data_arrays = []
 
     rescale_steps = np.array([1, 1, 1, 0.15, 0.15, 0.15, 0.15, 0.15])
     #coil_parameters = starting_point_coil_vals(output_path, which = args.start_coil_vals)
@@ -77,31 +156,10 @@ if __name__ == "__main__":
 
     # get the keys where sensor_status[key]["LLS"] is "1"
     active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
-    print(active_sensors)
-
-    # which channel indices does it correspond to?
     
 
-    time.sleep(2)
-    for i in range(5):
-        # get the data in the databuffer
-        data = OPM_control.connections[8089].get("data_buffer")
-        data = data[:64*3] # ignore AUX
-
-        # so we have sensor and channel dimensions 
-        n_channels, n_samples = data.shape[0], data.shape[1]
-        data = data.reshape(3, int(n_channels/3), n_samples)
-
-        # only get active sensors
-        data_active = data[:, active_sensors, :]
-        print(f"Data active sensors: {data_active} \n shape: {data_active.shape}")
-
-        # average over time dimension
-        data_active_mean = data_active.mean(axis=2)
-        print(f"Data active sensors (averaged): {data_active_mean} \n shape: {data_active_mean.shape}")
-
-        time.sleep(2)
-
+    coil_vals, collected_data_array = collect_data_array(
+        [0, 0, 0, 0, 0, 0, 0], rescale_steps, compcoils, OPM_control, active_sensors)
 
     """
     n_frames_to_print = 5
@@ -121,4 +179,5 @@ if __name__ == "__main__":
             time.sleep(0.1)
     """
     OPM_control.disconnect_all_ports()
+    compcoils.close()
 

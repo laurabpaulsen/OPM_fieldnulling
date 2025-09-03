@@ -285,32 +285,10 @@ class OPMQuspinControl:
         except Exception as e:
             print(f"Error during shutdown: {e}")
 
-    def check_sensor_status(self, value="calibration"):
+    def get_fields(self):
+        """gets the fields averaged over self.max_samples"""
+        if not self.connections[8091]["data_buffer"]:
+            return None
 
-        delimiters = {
-            "calibration": "CBS",
-            "laser_locked": "LLS",
-            "receiving_data": "CNT",
-            "disabled": "DIS",
-            "active_to_commands": "ACT"
-            }
-
-        delimiter = delimiters.get(value)
-
-        status_all = []
-
-        for row in self.connections[8090]["page2"]:    
-            # check if there is a 1 or zero after the delimiter
-            # add a space to the beginning of the row to avoid index errors when the delimiter is the first character
-            row = " " + row 
-
-            try:
-                parts = row.split(delimiter)
-                print(parts)
-                status = parts[1][0]
-                status_all.append(status)
-            except IndexError:
-                print(f"Error processing row: {row}")
-
-        # Print all statuses at once
-        print(f"{sum(1 for s in status_all if s == '1')} out of {len(status_all)} sensors {value}")
+        data = self.connections[8091]["data_buffer"]
+        return data.mean(axis=1)
