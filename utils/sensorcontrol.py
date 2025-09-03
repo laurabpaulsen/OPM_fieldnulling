@@ -19,7 +19,7 @@ class OPMQuspinControl:
         # Initialize connection data
         self.connections = {
             8089: {"connected": False, "socket": None, "name": "Data Stream", "data": [], "total_samples": 0, "data_buffer": deque()},
-            8090: {"connected": False, "socket": None, "name": "Text Display 1", "show_first_page": True},
+            8090: {"connected": False, "socket": None, "page1": [], "page2": []},
             8091: {"connected": False, "socket": None, "name": "Text Display 2"},
             8092: {"connected": False, "socket": None, "name": "Command Channel"}
         }
@@ -240,16 +240,17 @@ class OPMQuspinControl:
                     data_3d[0] = data_array[:rows]
                     data_3d[1] = data_array[rows:]
                     
-                    page = 0 if self.connections[port]["show_first_page"] else 1
-                    string_array = [self.uint8_array_to_string(row) for row in data_3d[page]]
+                    for page in range(2):
+                        string_array = [self.uint8_array_to_string(row) for row in data_3d[page]]
+                        self.connections[port][f"page{page+1}"] = string_array
                 else:
                     # Handle single page data (port 8091)
                     data_array = [payload[i:i+cols] for i in range(0, len(payload), cols)]
                     string_array = [self.uint8_array_to_string(row) for row in data_array]
 
-                # Store latest frame
-                self.connections[port]["last_frame"] = string_array
-                print(string_array)
+                    # Store latest frame
+                    self.connections[port]["last_frame"] = string_array
+
 
             except Exception as e:
                 self.log_message(f"Error processing text data: {e}")
@@ -290,3 +291,19 @@ class OPMQuspinControl:
                     self.disconnect(port)
         except Exception as e:
             print(f"Error during shutdown: {e}")
+
+    def check_status(self, value="calibration"):
+
+        delimiters = {
+            "calibration": "CBS"
+            }
+
+        delimiter = delimiters.get(value)
+
+        print(self.connections[8090]["page1"])
+
+        for row in self.connections[8090]["page1"]:
+            # check if there is a 1 or zero after the delimiter
+            parts = row.split(delimiter)
+            status = parts[1][0]
+            print(f"Status: {status}")

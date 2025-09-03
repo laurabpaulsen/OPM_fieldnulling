@@ -73,7 +73,10 @@ if __name__ == "__main__":
 
     OPM_control.send_command("Sensor|Auto Start")
 
-    
+    # check if sensors are calibrated on 8090
+    "CBS" 
+    #8090
+
 
     # check on the text ports
     for port in [8090, 8091]:
