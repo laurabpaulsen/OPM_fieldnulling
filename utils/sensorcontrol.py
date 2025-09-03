@@ -15,7 +15,7 @@ import logging
 import re
 
 class OPMQuspinControl:
-    def __init__(self, server_ip, history_seconds=1):
+    def __init__(self, server_ip, max_samples=1000):
 
         # Initialize connection data
         self.connections = {
@@ -27,13 +27,12 @@ class OPMQuspinControl:
         # Load commands
         #self.commands = self.load_commands("N1_Commands.txt")
         self.server_ip = server_ip
-        self.history_seconds = history_seconds  # Default history length
 
         self.channel_names = [f"X{i+1}" for i in range(64)] + \
                      [f"Y{i+1}" for i in range(64)] + \
                      [f"Z{i+1}" for i in range(64)] + \
                      [f"AUX{i+1}" for i in range(64)]
-        
+        self.max_samples = max_samples
         self.sensor_status = {}
 
     def log_message(self, message):
@@ -199,13 +198,12 @@ class OPMQuspinControl:
 
             # Append to buffer
             self.connections[port]["data_buffer"].append(data_array)
-            self.connections[port]["total_samples"] += data_array.shape[1]
+            self.connections[port]["total_samples"] += data_array.shape[-1]
 
             # Trim buffer if too long
-            max_samples = self.history_seconds * cols_adjusted
-            while self.connections[port]["total_samples"] > max_samples and len(self.connections[port]["data_buffer"]) > 0:
+            while self.connections[port]["total_samples"] > self.max_samples and len(self.connections[port]["data_buffer"]) > 0:
                 oldest = self.connections[port]["data_buffer"].popleft()
-                self.connections[port]["total_samples"] -= oldest.shape[1]
+                self.connections[port]["total_samples"] -= oldest.shape[-1]
 
         except Exception as e:
             self.log_message(f"Error processing graph data: {e}")
@@ -270,32 +268,6 @@ class OPMQuspinControl:
 
             except Exception as e:
                 self.log_message(f"Error processing text data: {e}")
-
-    def on_history_change(self, event=None):
-        """Handle history length change"""
-        try:
-            # Validate history length
-            new_history = self.history_length.get()
-            if new_history < 1:
-                self.history_length.set(1)
-            elif new_history > 20:
-                self.history_length.set(20)
-                
-            # Apply the change if we have data
-            if self.connections[8089]["data"]:
-                data_length = len(self.connections[8089]["data"][0])
-                max_samples = self.history_length.get() * data_length
-                
-                # Trim data if needed
-                if self.connections[8089]["total_samples"] > max_samples:
-                    self.connections[8089]["data"] = self.connections[8089]["data"][-max_samples:]
-                    self.connections[8089]["total_samples"] = max_samples
-                
-                
-            self.log_message(f"History length set to {self.history_length.get()} seconds")
-        except ValueError:
-            self.history_length.set(4)  # Default to 4 if invalid input
-            self.log_message("Invalid history length value, reset to 4")
 
 
     def on_closing(self):
