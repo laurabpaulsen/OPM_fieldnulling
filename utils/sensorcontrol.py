@@ -240,7 +240,6 @@ class OPMQuspinControl:
             #print(row)
             values = re.findall(r'([A-Z]{3})(-?\d+(?:\.\d+)?)', row)
             for prefix, number in values:
-                print(prefix, number)
                 self.sensor_status[i] = {prefix: number}
 
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
