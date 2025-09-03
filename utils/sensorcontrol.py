@@ -195,7 +195,6 @@ class OPMQuspinControl:
 
             # Store latest frame
             self.connections[port]["last_frame"] = data_array # shape is channels, time
-            print(data_array.shape)
 
             # Append to buffer
             if self.connections[port]["data_buffer"] is None:

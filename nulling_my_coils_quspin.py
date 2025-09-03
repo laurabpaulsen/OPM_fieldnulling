@@ -77,10 +77,7 @@ if __name__ == "__main__":
         # get the data in the databuffer
         data = OPM_control.connections[8089].get("data_buffer")
 
-        if data:
-            # convert data to numpy from deque
-            data_np = np.array(data)
-            print(f"Data in buffer: {data_np} \n shape: {data_np.shape}")
+        print(f"Data in buffer: {data} \n shape: {data.shape}")
 
         time.sleep(2)
 
