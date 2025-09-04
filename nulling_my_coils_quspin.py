@@ -11,7 +11,9 @@ import argparse as ap
 import numpy as np
 from utils.compcoils import CompFieldControl
 from utils.sensorcontrol import OPMQuspinControl
-    
+from utils.optimI import dual_annealing_residuals, nonneg_residual_lsq_algorithm    
+
+import pickle as pkl
 #from utils.data_handling import starting_point_coil_vals, save_array_to_txt
 
 #from fieldline_api.fieldline_service import FieldLineService
@@ -81,16 +83,24 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
     # preallocate memory for data collected from changing the coil parameters
     data = np.empty((len(active_sensors), 3, len(start_vec)+1), float) 
 
+    sensor_statuses = []
+
 
     for j, coil_values_tmp in enumerate(coil_values):
         # add 1 stepsize to each of the values in start_vec for each component of the field
         if j != 0: # as we have already set the field to the starting value we will not change it here  
             compcoils_control.setOffset(j-1, coil_values_tmp[j-1])
+            # OPM_control.send_command("Sensor|Ortho & Calibrate")
             
         #opm_main.fine_zero_sensors()
         # get the data in the databuffer
+        time.sleep(4)
         data_tmp = OPM_control.connections[8089].get("data_buffer")
         data_tmp = data_tmp[:64*3] # ignore AUX
+
+        status_tmp = OPM_control.sensor_status
+        sensor_statuses.append(status_tmp)
+
 
         # so we have sensor and channel dimensions
         n, n_samples = data_tmp.shape[0], data_tmp.shape[1]
@@ -103,8 +113,8 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
         data_active_mean = data_active.mean(axis=2)
         data[:,:,j] = data_active_mean
 
-
-    return coil_values, data
+    
+    return coil_values, data, sensor_statuses
 
 
 
@@ -137,15 +147,19 @@ if __name__ == "__main__":
 
 
     rescale_steps = np.array([1, 1, 1, 0.15, 0.15, 0.15, 0.15, 0.15])
+    # rescale_steps = np.array([0.1, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05])
     #coil_parameters = starting_point_coil_vals(output_path, which = args.start_coil_vals)
 
 
 
     compcoils = CompFieldControl()
-    #compcoils.set_coil_values([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
+    # start_vec = [51, 37.6, 2.1, 0, 0, 0, 0, 0]
+    start_vec = [0, 0, 0, 0, 0, 0, 0, 0]
+    compcoils.set_coil_values(start_vec)
+    
 
 
-    OPM_control = OPMQuspinControl(server_ip = "192.168.0.10")
+    OPM_control = OPMQuspinControl(server_ip = "192.168.0.10", max_samples=500)
     #comp_coils = CompFieldControl()
     start_time = time.time()
 
@@ -157,9 +171,35 @@ if __name__ == "__main__":
     # get the keys where sensor_status[key]["LLS"] is "1"
     active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
     
+    coil_vals, collected_data_array, sensor_statuses = collect_data_array(
+        np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
+    print(sensor_statuses)
 
-    coil_vals, collected_data_array = collect_data_array(
-        np.array([0, 0, 0, 0, 0, 0, 0, 0]), rescale_steps, compcoils, OPM_control, active_sensors)
+    np.savez("optim_iteration1_fieldzero_on.npz", coil_vals = coil_vals, collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+
+
+
+
+    # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
+    result = dual_annealing_residuals(coil_vals, collected_data_array)
+    start_vec = result.x
+    compcoils.set_coil_values(start_vec)
+    print(result)
+
+  
+    coil_vals, collected_data_array, sensor_statuses = collect_data_array(
+        np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
+    print(sensor_statuses)
+    
+    np.savez("optim_iteration2_fieldzero_on.npz", coil_vals = coil_vals, collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+
+
+
+    # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
+    result = dual_annealing_residuals(coil_vals, collected_data_array)
+    compcoils.set_coil_values(result.x)
+    print(result)
+
 
     """
     n_frames_to_print = 5
@@ -171,7 +211,7 @@ if __name__ == "__main__":
             print(frame[20])
 
                 #if 8089 in OPM_control.connections and "last_frame" in OPM_control.connections[8089]:
-                #    frame = OPM_control.connections[8089]["last_frame"]
+                #    frame = OPM_control.conrnections[8089]["last_frame"]
                 #    if frame is not None:
                 #        print("Latest frame from Data Stream port 8089:")
                 #        print(frame)
@@ -179,5 +219,4 @@ if __name__ == "__main__":
             time.sleep(0.1)
     """
     OPM_control.disconnect_all_ports()
-    compcoils.close()
 

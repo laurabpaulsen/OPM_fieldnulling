@@ -8,7 +8,6 @@ import threading
 import struct
 import select
 import numpy as np
-from collections import deque
 
 import os
 import logging

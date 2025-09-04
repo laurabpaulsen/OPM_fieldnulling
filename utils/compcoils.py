@@ -7,10 +7,10 @@ sys.path.append('../..')
 sys.path.append('coilAPI')
 from utils.com_monitor import ComMonitorThread
 
-from .optim import nonneg_residual_lsq_algorithm
+#from .optim import nonneg_residual_lsq_algorithm
 
 class CompFieldControl:
-    def __init__(self, min_voltage = -10, max_voltage = 10, optimisation_algorithm = nonneg_residual_lsq_algorithm):
+    def __init__(self, min_voltage = -10, max_voltage = 10):#, optimisation_algorithm = nonneg_residual_lsq_algorithm):
         self.tx_q = queue.Queue(maxsize=10000)
         self.rx_q = queue.Queue(maxsize=10000)
         self.monitor_msg_q = queue.Queue(maxsize=100)
@@ -33,7 +33,7 @@ class CompFieldControl:
         self.coil_dBdV = self.coil_dBdI / self.coil_R
         self.min_voltage = min_voltage
         self.max_voltage = max_voltage
-        self.optimisation_algorithm = optimisation_algorithm
+        #self.optimisation_algorithm = optimisation_algorithm
 
         time.sleep(3)
         self.ser_monitor.start()
@@ -60,10 +60,10 @@ class CompFieldControl:
             print("Rx:")
             print(rx_data)
 
-    def optimise_coil_settings(self, coil_values, data_array, kwargs={}):
-        new_coil_values = self.optimisation_algorithm(coil_values, data_array, **kwargs)
+    #def optimise_coil_settings(self, coil_values, data_array, kwargs={}):
+    #    new_coil_values = self.optimisation_algorithm(coil_values, data_array, **kwargs)
         
-        return np.round(new_coil_values, 2)
+    #    return np.round(new_coil_values, 2)
 
 
     def set_coil_values(self, values):
@@ -76,6 +76,3 @@ class CompFieldControl:
         self.setOffset(6, values[6]) 
         self.setOffset(7, values[7]) 
         time.sleep(2) # how important was this delay again????
-
-    def close(self):
-        self.ser_monitor.stop()
