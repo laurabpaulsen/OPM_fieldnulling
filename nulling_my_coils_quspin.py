@@ -175,7 +175,7 @@ if __name__ == "__main__":
         np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
     print(sensor_statuses)
 
-    np.savez("optim_iteration1_fieldzero_on.npz", coil_vals = coil_vals, collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+    np.savez("optim_iteration01_fieldzero_off.npz", coil_vals = coil_vals, collected_data_array=collected_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
 
 
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
     result = dual_annealing_residuals(coil_vals, collected_data_array)
     start_vec = result.x
-    compcoils.set_coil_values(start_vec)
+    compcoils.set_coil_values(start_vec) # Maybe comment out during data collection!?!?
     print(result)
 
   
@@ -191,7 +191,7 @@ if __name__ == "__main__":
         np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
     print(sensor_statuses)
     
-    np.savez("optim_iteration2_fieldzero_on.npz", coil_vals = coil_vals, collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+    np.savez("optim_iteration02_fieldzero_off.npz", coil_vals = coil_vals, collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
 
 

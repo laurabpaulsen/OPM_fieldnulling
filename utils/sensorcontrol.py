@@ -190,7 +190,7 @@ class OPMQuspinControl:
                 return
 
             data_array = np.frombuffer(payload, dtype=np.float32).reshape(rows * 4, cols_adjusted)
-            # check if any data is not zero
+            # check if any data is not zero | this isnot actually being checked right?
 
             # Store latest frame
             self.connections[port]["last_frame"] = data_array # shape is channels, time
@@ -246,7 +246,7 @@ class OPMQuspinControl:
             #print(row)
             values = re.findall(r'([A-Z]{3})(-?\d+(?:\.\d+)?)', row)
 
-            self.sensor_status[i] = {prefix: number for prefix, number in values}
+            self.sensor_status[i] = {prefix: number for prefix, number in values} # This variable is not updated in our data collected on the Sept. 5th 2025 -> we need to make sure this happens
 
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
             """Process text data for display"""
