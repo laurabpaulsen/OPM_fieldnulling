@@ -26,7 +26,7 @@ if not switch:
     # raw_array = mne.io.read_raw_fif(data_dir[0])
 else:
     # Data from sensor status & data thread
-    data_dir = glob("..\\data\\*.npz"); print(len(data_dir)) 
+    data_dir = glob("..\\data\\optim01_*.npz"); print(len(data_dir)) 
     raw_array = {'on': list(),'off': list()}
     for dir in data_dir:
         if "fieldzero_on" in dir:
@@ -47,15 +47,17 @@ def convert2volt(field,ch):
      return field / coil_dBdV[ch] * 1e-9
 #%% Viz my noise level please!!!
 
-matplotlib.use('inline')
-selective = np.array([17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,
-                      42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64])-1
-fig,ax = plt.subplots(2)
+matplotlib.use('QtAgg')
+# selective = np.array([17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,
+#                       42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64])-1
+selective = np.array([17,18,19,21,22,23,24,25,26,27,28,29,30,32,33,34,35,36,37,38,39,42,43,44,45,46,48,49,52,54,56,58,60,61,62])
+fig,ax = plt.subplots(2,sharex=True,height_ratios=[0.5,0.5]); txt = ['Middle','Quiet Spot']
 for i in range(2):
     tmp = raw_array[i].compute_psd(picks=np.concatenate([selective+64*2]), fmin=1, fmax=80)
     # print(raw_array[i].filenames)
     tmp.plot(amplitude=True, dB=False, average=False, axes=ax[i])
     # ax[i].set_ylim(0,100)
+    ax[i].set_title(txt[i])
     
 plt.show()
 
@@ -106,7 +108,8 @@ bad_annot = mne.Annotations(
     description=['bad','bad','bad','bad','bad','bad','bad','bad','bad','bad']
 )
 # raw_array[0].set_annotations(bad_annot)
-FS = 750 # Sample frequency
+# FS = 750 # Sample frequency
+FS = 375
 jump_point = np.array([3.727,11.369,17.478,24.805,32.763,41.303,50.399,57.699]) # locations where the coils are changed in order
 # frequency_point['regular'] = jump_point # I guess?
 tmp,freqs['regular'] = raw_array[0].get_data(picks='data',return_times=True)
@@ -154,7 +157,7 @@ if not switch:
     data = data[selective,:,:] 
     print(data.shape)
 else:
-    which_set = 0; available_sets = [('off',0),('off',1),('on',0),('on',1)]
+    which_set = 2; available_sets = [('off',0),('off',1),('on',0),('on',1)]
     keys = raw_array[available_sets[which_set][0]][available_sets[which_set][1]].files # name of the stored variables in the .npz file
     sensor_status = raw_array[available_sets[which_set][0]][available_sets[which_set][1]][keys[2]]#.reshape(9,-1) # sensor status information for each coil setting
     active_sensor = raw_array[available_sets[which_set][0]][available_sets[which_set][1]][keys[-1]] # which sensors were active in the session
