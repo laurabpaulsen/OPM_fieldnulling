@@ -91,19 +91,22 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
         if j != 0: # as we have already set the field to the starting value we will not change it here  
             compcoils_control.setOffset(j-1, coil_values_tmp[j-1])
             # OPM_control.send_command("Sensor|Ortho & Calibrate")
-            OPM_control.send_command("Sensor|All B MOD ON")
+            # OPM_control.send_command("Sensor|All B MOD ON")
             
         #opm_main.fine_zero_sensors()
         # get the data in the databuffer
-        time.sleep(10)
+        time.sleep(4) 
         data_tmp = OPM_control.connections[8089].get("data_buffer")
         data_tmp = data_tmp[:64*3] # ignore AUX
         # Added by Jamie
-        data_8090 = OPM_control.connections[8090].get("display2")
+        # data_8090 = OPM_control.connections[8090].get("display2") # What the fuck is this??? [Jacob]
 
-        status_tmp = OPM_control.get_sensor_status_snapshot() # Potential fix in order to grap the data instead of creating a repeated pointers to the same variable.
+        # status_tmp = OPM_control.get_sensor_status_snapshot() # Potential fix in order to grap the data instead of creating a repeated pointers to the same variable.
         status_tmp = OPM_control.sensor_status.copy() # Alternate/simpler way to snapshot the pointed variable 
+        
+        # print([status_tmp[key]["CBS"] for key in status_tmp])
         sensor_statuses.append(status_tmp)
+
 
 
         # so we have sensor and channel dimensions
@@ -120,7 +123,15 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
     
     return coil_values, data, sensor_statuses
 
-
+def make_sensor_status_data_array(active_sensor,sensor_status):
+    applied_fields = np.empty((64,3,9)) # Total size -> adjusted later for active sensors
+    for i,status_i in enumerate(sensor_status):
+        applied_fields[:,:,i] = np.array([[float(status_i[key]['BFX']),
+                                           float(status_i[key]['BFY']),
+                                           float(status_i[key]['BFZ'])] 
+                                           for key in status_i])
+    applied_fields_active_only = applied_fields.copy()
+    return applied_fields_active_only[active_sensor,:,:]
 
 
 def parse_args():
@@ -171,13 +182,11 @@ if __name__ == "__main__":
     #coil_parameters = starting_point_coil_vals(output_path, which = args.start_coil_vals)
 
 
-
     compcoils = CompFieldControl()
     # start_vec = [51, 37.6, 2.1, 0, 0, 0, 0, 0]
     start_vec = [0, 0, 0, 0, 0, 0, 0, 0] 
     compcoils.set_coil_values(start_vec)
     
-
 
     OPM_control = OPMQuspinControl(server_ip = "192.168.0.10", max_samples=500)
     #comp_coils = CompFieldControl()
@@ -185,45 +194,57 @@ if __name__ == "__main__":
 
     OPM_control.connect_all_ports()
 
-    OPM_control.send_command("Sensor|Ortho & Calibrate") 
-    time.sleep(10)
-    # OPM_control.send_command('Sensor|Field Zero ON')
+    
+    # OPM_control.send_command("Sensor|Reboot") # Step 1 Reboot
+    #  
+    # OPM_control.send_command("Sensor|Auto Start") # Step 2 Auto Start
 
+    ## Checking variables for debugging! 
+    # tmp_check = [OPM_control.sensor_status[key]['STS'] for key in OPM_control.sensor_status]# if OPM_control.sensor_status[key]["LLS"] == "1"]
+    # print(tmp_check)
+    time.sleep(4)
+    printing = False
+    if printing:
+        print([OPM_control.sensor_status[key]['BFX'] for key in OPM_control.sensor_status])# if OPM_control.sensor_status[key]["LLS"] == "1"]
+        print([OPM_control.sensor_status[key]['BFY'] for key in OPM_control.sensor_status])# if OPM_control.sensor_status[key]["LLS"] == "1"]
+        print([OPM_control.sensor_status[key]['BFZ'] for key in OPM_control.sensor_status])# if OPM_control.sensor_status[key]["LLS"] == "1"
+
+
+    ## Starting data collection and coil optimization scheme
     # get the keys where sensor_status[key]["LLS"] is "1"
     active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
     
-    coil_vals, collected_data_array, sensor_statuses = collect_data_array(
-        np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
-    # print(sensor_statuses)
+    # coil_vals, collected_data_array, sensor_statuses = collect_data_array(np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
 
-    check_applied_fields(active_sensors,sensor_statuses)
+    # applied_fields = make_sensor_status_data_array(active_sensors,sensor_statuses)
+    # # print(applied_fields.shape)
 
-## not needed before applied fields update
-    # np.savez("optim_iteration01_fieldzero_off.npz", coil_vals = coil_vals, collected_data_array=collected_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+    # # check_applied_fields(active_sensors,sensor_statuses)
 
-
-
+    # np.savez("data/optim_iteration01_applied_fields_fieldzero_just_on.npz", coil_vals = coil_vals, 
+    #          collected_data_array=collected_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
     # # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
-    result = dual_annealing_residuals(coil_vals, collected_data_array)
+    # result = dual_annealing_residuals(coil_vals, applied_fields)
+    # # result = dual_annealing_residuals(coil_vals, collected_data_array)
     # start_vec = result.x
     # compcoils.set_coil_values(start_vec) # Maybe comment out during data collection!?!?
-    print(result)
+    # print(result)
 
   
     # coil_vals, collected_data_array, sensor_statuses = collect_data_array(
     #     np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
     # # print(sensor_statuses)
     
-    # np.savez("optim_iteration02_fieldzero_off.npz", coil_vals = coil_vals, collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
-
-
+    # np.savez("data/optim_iteration02_applied_fields_fieldzero_just_on.npz", coil_vals = coil_vals, 
+    #          collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
     # # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
-    # result = dual_annealing_residuals(coil_vals, collected_data_array)
+    # result = dual_annealing_residuals(coil_vals, applied_fields)
+    # # result = dual_annealing_residuals(coil_vals, collected_data_array)
     # compcoils.set_coil_values(result.x)
     # print(result)
-## not needed before applied fields update
+
 
     """
     n_frames_to_print = 5

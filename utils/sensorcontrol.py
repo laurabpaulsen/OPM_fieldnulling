@@ -34,7 +34,13 @@ class OPMQuspinControl:
         self.max_samples = max_samples
 
         self.sensor_status = {}
-        self._status_lock = threading.Lock() # Attempt to grap snapshot of the sensor status
+        self.additional_status_info = [] 
+        # additional status info desciphor 
+        self.SENSOR_STATUS_INFO = ['Bz Fast lock','By Fast lock','Bx Fast lock','Bz Slow lock','By Slow lock','Bx Slow lock','Slow Closed Loop',
+                                   'Bz MOD','By MOD','Bx MOD','Calibration applied and in normal range','Calibration procedure active','Fields from Field Zero is applied',
+                                   'Field Zero active','Auto Start has completed','Auto Start procedure is running','light check passed','Triaxial mode'] # 0-13 are not used and therefore removed from the message. 
+        
+        # self._status_lock = threading.Lock() # Attempt to grap snapshot of the sensor status
 
     def log_message(self, message):
         logging.info(message)
@@ -250,10 +256,14 @@ class OPMQuspinControl:
 
             self.sensor_status[i] = {prefix: number for prefix, number in values} # This variable is not updated in our data collected on the Sept. 5th 2025 -> we need to make sure this happens
     
-    def get_sensor_status_snapshot(self): # This will allow manual updating of the sensor_status variable to grap in the data collection in nulling_my_coils_quspin.py
-        with self._status_lock:
-            import copy
-            return copy.deepcopy(self.sensor_status)
+    def uint32_t_to_bool(self):
+        # status_message = [str(format(self.sensor_status[key]['STS'], "032b"))[13:] for key in self.sensor_status]
+        self.additional_status_info = []
+        
+        for i in self.sensor_status:
+            status_message = str(format(int(self.sensor_status[i]["STS"]), "032b"))[13:]
+            self.additional_status_info.append(status_message)
+
     
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
             """Process text data for display"""
@@ -264,6 +274,7 @@ class OPMQuspinControl:
                     data_array = np.frombuffer(payload, dtype=np.uint8).reshape(rows*2, half_cols)
 
                     self.update_sensor_status(data_array[rows:])
+                    self.uint32_t_to_bool()
 
                     string_array = [self.uint8_array_to_string(row) for row in data_array[:rows]]
                     self.connections[port]["page1"] = string_array
