@@ -98,7 +98,8 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
         data_tmp = OPM_control.connections[8089].get("data_buffer")
         data_tmp = data_tmp[:64*3] # ignore AUX
 
-        status_tmp = OPM_control.sensor_status
+        status_tmp = OPM_control.get_sensor_status_snapshot() # Potential fix in order to grap the data instead of creating a repeated pointers to the same variable.
+        status_tmp = OPM_control.sensor_status.copy() # Alternate/simpler way to snapshot the pointed variable 
         sensor_statuses.append(status_tmp)
 
 

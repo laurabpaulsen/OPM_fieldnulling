@@ -32,7 +32,9 @@ class OPMQuspinControl:
                      [f"Z{i+1}" for i in range(64)] + \
                      [f"AUX{i+1}" for i in range(64)]
         self.max_samples = max_samples
+
         self.sensor_status = {}
+        self._status_lock = threading.Lock() # Attempt to grap snapshot of the sensor status
 
     def log_message(self, message):
         logging.info(message)
@@ -247,7 +249,12 @@ class OPMQuspinControl:
             values = re.findall(r'([A-Z]{3})(-?\d+(?:\.\d+)?)', row)
 
             self.sensor_status[i] = {prefix: number for prefix, number in values} # This variable is not updated in our data collected on the Sept. 5th 2025 -> we need to make sure this happens
-
+    
+    def get_sensor_status_snapshot(self): # This will allow manual updating of the sensor_status variable to grap in the data collection in nulling_my_coils_quspin.py
+        with self._status_lock:
+            import copy
+            return copy.deepcopy(self.sensor_status)
+    
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
             """Process text data for display"""
             try:
