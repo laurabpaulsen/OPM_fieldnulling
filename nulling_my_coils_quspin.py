@@ -91,12 +91,15 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
         if j != 0: # as we have already set the field to the starting value we will not change it here  
             compcoils_control.setOffset(j-1, coil_values_tmp[j-1])
             # OPM_control.send_command("Sensor|Ortho & Calibrate")
+            OPM_control.send_command("Sensor|All B MOD ON")
             
         #opm_main.fine_zero_sensors()
         # get the data in the databuffer
-        time.sleep(4)
+        time.sleep(10)
         data_tmp = OPM_control.connections[8089].get("data_buffer")
         data_tmp = data_tmp[:64*3] # ignore AUX
+        # Added by Jamie
+        data_8090 = OPM_control.connections[8090].get("display2")
 
         status_tmp = OPM_control.sensor_status
         sensor_statuses.append(status_tmp)
@@ -130,6 +133,22 @@ def parse_args():
     return args
 
 
+def check_applied_fields(active_sensor,sensor_status):
+    applied_fields = np.empty((len(active_sensor),3,9))
+    for i,status_i in enumerate(sensor_status):
+        applied_fields[:,:,i] = np.array([[float(status_i[key]['BFX']),
+                                           float(status_i[key]['BFY']),
+                                           float(status_i[key]['BFZ'])] 
+                                           for key in status_i if status_i[key]["LLS"] == "1"])   
+    data = applied_fields.copy()
+    for i in range(8):
+        if np.any((data[:,:,i]-data[:,:,i+1]) != 0):
+            # plt.imshow(data[:,:,i].T)
+            # plt.show()
+            print('Different! 🎉')
+        else:
+            print('All "Applied fields" are identical!!')
+
 
 if __name__ == "__main__":
 
@@ -154,7 +173,7 @@ if __name__ == "__main__":
 
     compcoils = CompFieldControl()
     # start_vec = [51, 37.6, 2.1, 0, 0, 0, 0, 0]
-    start_vec = [0, 0, 0, 0, 0, 0, 0, 0]
+    start_vec = [0, 0, 0, 0, 0, 0, 0, 0] 
     compcoils.set_coil_values(start_vec)
     
 
@@ -166,40 +185,44 @@ if __name__ == "__main__":
     OPM_control.connect_all_ports()
 
     OPM_control.send_command("Sensor|Ortho & Calibrate") 
-    time.sleep(2)
+    time.sleep(10)
+    # OPM_control.send_command('Sensor|Field Zero ON')
 
     # get the keys where sensor_status[key]["LLS"] is "1"
     active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
     
     coil_vals, collected_data_array, sensor_statuses = collect_data_array(
         np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
-    print(sensor_statuses)
+    # print(sensor_statuses)
 
-    np.savez("optim_iteration01_fieldzero_off.npz", coil_vals = coil_vals, collected_data_array=collected_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+    check_applied_fields(active_sensors,sensor_statuses)
+
+## not needed before applied fields update
+    # np.savez("optim_iteration01_fieldzero_off.npz", coil_vals = coil_vals, collected_data_array=collected_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
 
 
 
-    # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
+    # # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
     result = dual_annealing_residuals(coil_vals, collected_data_array)
-    start_vec = result.x
-    compcoils.set_coil_values(start_vec) # Maybe comment out during data collection!?!?
+    # start_vec = result.x
+    # compcoils.set_coil_values(start_vec) # Maybe comment out during data collection!?!?
     print(result)
 
   
-    coil_vals, collected_data_array, sensor_statuses = collect_data_array(
-        np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
-    print(sensor_statuses)
+    # coil_vals, collected_data_array, sensor_statuses = collect_data_array(
+    #     np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
+    # # print(sensor_statuses)
     
-    np.savez("optim_iteration02_fieldzero_off.npz", coil_vals = coil_vals, collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+    # np.savez("optim_iteration02_fieldzero_off.npz", coil_vals = coil_vals, collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
 
 
-    # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
-    result = dual_annealing_residuals(coil_vals, collected_data_array)
-    compcoils.set_coil_values(result.x)
-    print(result)
-
+    # # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
+    # result = dual_annealing_residuals(coil_vals, collected_data_array)
+    # compcoils.set_coil_values(result.x)
+    # print(result)
+## not needed before applied fields update
 
     """
     n_frames_to_print = 5
