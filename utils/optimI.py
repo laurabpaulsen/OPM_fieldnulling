@@ -18,7 +18,7 @@ def dual_annealing_residuals(baseline,data):
 
         n_channels = data.shape[0]
 
-        weight = [.5, .5, 1]
+        weight = [1, 1, 1]
         for i in range(9):
             data[:,:,i] = data[:,:,i] * weight
 

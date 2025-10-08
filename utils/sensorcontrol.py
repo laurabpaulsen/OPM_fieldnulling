@@ -270,8 +270,7 @@ class OPMQuspinControl:
         for i in self.sensor_status:
             status_message = str(format(int(self.sensor_status[i]["STS"]), "032b"))[13:]
             self.additional_status_info.append(status_message)
-
-    
+ 
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
             """Process text data for display"""
             try:
@@ -298,7 +297,6 @@ class OPMQuspinControl:
             except Exception as e:
                 self.log_message(f"Error processing text data: {e}")
 
-
     def on_closing(self):
         """Handle application closing"""
         try:
@@ -323,6 +321,8 @@ class OPMQuspinControl:
         self.send_command(command)
         try:
             match command:
+                case 'Sensor|Reboot':
+                    info_idx = 16
                 case 'Sensor|Auto Start':
                     info_idx = 14
                 case _: # Default/fail safe option 
