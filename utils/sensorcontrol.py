@@ -36,9 +36,16 @@ class OPMQuspinControl:
         self.sensor_status = {}
         self.additional_status_info = [] 
         # additional status info desciphor 
-        self.SENSOR_STATUS_INFO = ['Bz Fast lock','By Fast lock','Bx Fast lock','Bz Slow lock','By Slow lock','Bx Slow lock','Slow Closed Loop',
-                                   'Bz MOD','By MOD','Bx MOD','Calibration applied and in normal range','Calibration procedure active','Fields from Field Zero is applied',
-                                   'Field Zero active','Auto Start has completed','Auto Start procedure is running','light check passed','Triaxial mode'] # 0-13 are not used and therefore removed from the message. 
+        self.SENSOR_STATUS_INFO = ['Bz Fast lock','By Fast lock','Bx Fast lock',
+                                   'Bz Slow lock','By Slow lock','Bx Slow lock',
+                                   'Slow Closed Loop',
+                                   'Bz MOD','By MOD','Bx MOD',
+                                   'Calibration applied and in normal range','Calibration procedure active',
+                                   'Fields from Field Zero is applied','Field Zero active',
+                                   'Auto Start has completed','Auto Start procedure is running',
+                                   'light check passed',
+                                   'Triaxial mode'
+                                    ] # 0-13 are not used and therefore removed from the message. 
         
         # self._status_lock = threading.Lock() # Attempt to grap snapshot of the sensor status
 
@@ -309,3 +316,29 @@ class OPMQuspinControl:
 
         data = self.connections[8091]["data_buffer"]
         return data.mean(axis=1)
+    
+    def wait_im_not_done(self,command):
+        # from progressbar import ProgressBar
+        from time import sleep
+        self.send_command(command)
+        try:
+            match command:
+                case 'Sensor|Auto Start':
+                    info_idx = 14
+                case _: # Default/fail safe option 
+                    self.log_message('Not valid Command registered!')
+        except:
+            self.log_message('Not sure how we ended up here?')
+
+        self.log_message(f'Chekcing: {self.SENSOR_STATUS_INFO[info_idx]}')
+        info_check = []
+        # with ProgressBar(max_value=10) as bar:
+        for _ in range(3*60*2): # limit loop to 2 minuts 
+            info_check = [int(key[info_idx]) for key in self.additional_status_info]
+            sleep(0.333)
+            # bar.update(sum(info_check))
+            print(sum(info_check))
+            if all(info_check):
+                break
+        # for _ in range(30):
+

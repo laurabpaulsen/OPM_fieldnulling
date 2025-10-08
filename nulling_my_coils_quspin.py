@@ -124,6 +124,10 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
     return coil_values, data, sensor_statuses
 
 def make_sensor_status_data_array(active_sensor,sensor_status):
+    # Function to convert the "applied fields" collected in "collect_data_array" to the same input 
+    # format as the collected_data for the nulling algorithm.
+    # Adjusts the size of the applied fields based on active_sensors 
+    # (might be necessary to check if any sensors failed callibration during data collection) 
     applied_fields = np.empty((64,3,9)) # Total size -> adjusted later for active sensors
     for i,status_i in enumerate(sensor_status):
         applied_fields[:,:,i] = np.array([[float(status_i[key]['BFX']),
@@ -145,7 +149,8 @@ def parse_args():
     return args
 
 
-def check_applied_fields(active_sensor,sensor_status):
+def check_applied_fields(active_sensor,sensor_status): 
+    # need to accomodate if sensors failed to calibrate during the collect_data_array function because in  that case len(active_sensor) != len(status_i[n]['LLS'] == '1')
     applied_fields = np.empty((len(active_sensor),3,9))
     for i,status_i in enumerate(sensor_status):
         applied_fields[:,:,i] = np.array([[float(status_i[key]['BFX']),
@@ -195,14 +200,22 @@ if __name__ == "__main__":
     OPM_control.connect_all_ports()
 
     
-    # OPM_control.send_command("Sensor|Reboot") # Step 1 Reboot
-    #  
+    OPM_control.send_command("Sensor|Reboot") # Step 1 Reboot
+     
     # OPM_control.send_command("Sensor|Auto Start") # Step 2 Auto Start
+    OPM_control.wait_im_not_done('Sensor|Auto Start')
+    print(compcoils.monitor_msg_q)
+    print(compcoils.rx_q)
+    time.sleep(4) # Wait until Auto Starft is done
+    compcoils.print_rx()
+    print(compcoils.monitor_msg_q)
+    print(compcoils.rx_q)
+
+
 
     ## Checking variables for debugging! 
     # tmp_check = [OPM_control.sensor_status[key]['STS'] for key in OPM_control.sensor_status]# if OPM_control.sensor_status[key]["LLS"] == "1"]
     # print(tmp_check)
-    time.sleep(4)
     printing = False
     if printing:
         print([OPM_control.sensor_status[key]['BFX'] for key in OPM_control.sensor_status])# if OPM_control.sensor_status[key]["LLS"] == "1"]
