@@ -38,6 +38,8 @@ class CompFieldControl:
         time.sleep(3)
         self.ser_monitor.start()
 
+        self.set_coil_values([0,0,0,0,0,0,0,0])
+
     def setOffset(self, ch, field, verbose=True, delay=0.1):
 
         value = field / self.coil_dBdV[ch] * 1e-9
@@ -64,7 +66,10 @@ class CompFieldControl:
     #    new_coil_values = self.optimisation_algorithm(coil_values, data_array, **kwargs)
         
     #    return np.round(new_coil_values, 2)
-
+    def disconnect_coils(self):
+        self.set_coil_values([0,0,0,0,0,0,0,0])
+        self.ser_monitor.join()
+        
 
     def set_coil_values(self, values):
         self.setOffset(0, values[0]) 
@@ -75,4 +80,4 @@ class CompFieldControl:
         self.setOffset(5, values[5]) 
         self.setOffset(6, values[6]) 
         self.setOffset(7, values[7]) 
-        time.sleep(2) # how important was this delay again????
+        # time.sleep(2) # how important was this delay again????

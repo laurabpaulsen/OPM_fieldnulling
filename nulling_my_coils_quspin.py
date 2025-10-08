@@ -280,6 +280,7 @@ if __name__ == "__main__":
             time.sleep(0.1)
     """
     # Closing the to objects feed: however when performed a big shift in the signal is seen 
-    # compcoils.ser_monitor.join()
+    # compcoils.disconnect_coils() # might have to be done!!!
+    compcoils.ser_monitor.join() # might have to be done!!!
     # OPM_control.disconnect_all_ports()
 
