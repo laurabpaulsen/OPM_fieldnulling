@@ -13,6 +13,9 @@ import os
 import logging
 import re
 
+from progressbar import ProgressBar
+from time import sleep
+
 class OPMQuspinControl:
     def __init__(self, server_ip, max_samples=1000):
 
@@ -268,7 +271,7 @@ class OPMQuspinControl:
         self.additional_status_info = []
         
         for i in self.sensor_status:
-            status_message = str(format(int(self.sensor_status[i]["STS"]), "032b"))[13:]
+            status_message = str(format(int(self.sensor_status[i]["STS"]), "032b"))[14:]
             self.additional_status_info.append(status_message)
  
     def process_text_data(self, port, payload, rows, cols, frame_num, checksum, dual_page=False):
@@ -316,8 +319,7 @@ class OPMQuspinControl:
         return data.mean(axis=1)
     
     def wait_im_not_done(self,command):
-        # from progressbar import ProgressBar
-        from time import sleep
+
         self.send_command(command)
         try:
             match command:
@@ -325,6 +327,10 @@ class OPMQuspinControl:
                     info_idx = 16
                 case 'Sensor|Auto Start':
                     info_idx = 14
+                case 'Sensor|Field Zero ON':
+                    info_idx = 12
+                case 'Sensor|Ortho & Calibrate':
+                    info_idx = 10    
                 case _: # Default/fail safe option 
                     self.log_message('Not valid Command registered!')
         except:
@@ -332,13 +338,24 @@ class OPMQuspinControl:
 
         self.log_message(f'Chekcing: {self.SENSOR_STATUS_INFO[info_idx]}')
         info_check = []
-        # with ProgressBar(max_value=10) as bar:
+        active_to_commands = sum([int(self.sensor_status[key]['ACT']) for key in self.sensor_status]) 
+        bar = ProgressBar(maxval=active_to_commands)
+        bar.start()
         for _ in range(3*60*2): # limit loop to 2 minuts 
-            info_check = [int(key[info_idx]) for key in self.additional_status_info]
+            info_check = [int(key[info_idx]) for idx,key in enumerate(self.additional_status_info) if self.sensor_status[idx]['ACT']=="1"]
             sleep(0.333)
-            # bar.update(sum(info_check))
-            print(sum(info_check))
+            bar.update(sum(info_check))
+            # print(info_check)
+            # print(sum(info_check))
             if all(info_check):
                 break
         # for _ in range(30):
+    
+    def startup_sequence(self):
+        self.connect_all_ports()
+        self.send_command("PSU|PSU Enable Outputs")
+        sleep(10) # Give the PSU time to power ON
+        self.wait_im_not_done('Sensor|Auto Start')
+        self.wait_im_not_done('Sensor|Field Zero ON')
+        self.wait_im_not_done('Sensor|Ortho & Calibrate')
 

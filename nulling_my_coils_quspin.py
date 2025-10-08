@@ -195,24 +195,36 @@ if __name__ == "__main__":
     #comp_coils = CompFieldControl()
     start_time = time.time()
 
-    OPM_control.connect_all_ports()
+    i_like_the_old_one = True
+    if i_like_the_old_one:
+        OPM_control.connect_all_ports()
 
-    ## Work on this later!!!!!! U fool!""
-    # OPM_control.send_command("Sensor|Reboot") # Step 1 Reboot
-    time.sleep(4)
-    # OPM_control.send_command("Sensor|Auto Start") # Step 2 Auto Start
-    # OPM_control.wait_im_not_done('Sensor|Auto Start')
+        ## Work on this later!!!!!! U fool!""
+        # OPM_control.send_command("Sensor|Reboot") # Step 1 Reboot
+        OPM_control.send_command("PSU|PSU Enable Outputs")
+        time.sleep(10)
+        # OPM_control.send_command("Sensor|Auto Start") # Step 2 Auto Start
+        # print(len(OPM_control.SENSOR_STATUS_INFO))
+        # print(len(OPM_control.additional_status_info[0]))
+        OPM_control.wait_im_not_done('Sensor|Auto Start')
 
+        OPM_control.wait_im_not_done('Sensor|Field Zero ON')
+
+        OPM_control.wait_im_not_done('Sensor|Ortho & Calibrate')
+    else:
+        OPM_control.startup_sequence()
 
     # time.sleep(4) # Wait until Auto Start is done
-
-    # while False:
+    # 00000000111000 0 0001
+    # print(OPM_control.additional_status_info)
+    # print([OPM_control.sensor_status[key]['DIS'] for key in OPM_control.sensor_status])
+    # print([OPM_control.sensor_status[key]['ACT'] for key in OPM_control.sensor_status])
+    # while True:
     #     time.sleep(0.333)
     #     if all([int(key[14]) for key in OPM_control.additional_status_info]):
     #         break 
           
     # print(OPM_control.sensor_status)
-    # print(OPM_control.additional_status_info)
 
 
     ## Checking variables for debugging! 
@@ -227,6 +239,9 @@ if __name__ == "__main__":
 
     ## Starting data collection and coil optimization scheme
     # get the keys where sensor_status[key]["LLS"] is "1"
+    end_time = time.time()
+    print(f'Initializing took:{end_time-start_time}s to complete')
+    '''
     active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
     
     coil_vals, collected_data_array, sensor_statuses = collect_data_array(np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
@@ -279,6 +294,7 @@ if __name__ == "__main__":
                 # Sleep a bit to allow next frame to arrive
             time.sleep(0.1)
     """
+    '''
     # Closing the to objects feed: however when performed a big shift in the signal is seen 
     # compcoils.disconnect_coils() # might have to be done!!!
     compcoils.ser_monitor.join() # might have to be done!!!
