@@ -101,7 +101,7 @@ def nonneg_residual_lsq_algorithm(coil_settings, data, weight = [0.5, 0.5, 1.]):
         penalty = np.sum((Lvec.T @ baseline + offsets) < 0) + 1
 
         # print(penalty)
-        return squared_error*penalty
+        return squared_error#*penalty
     
     def constraint(baseline,Lvec, offsets):
         return np.sum((Lvec.T @ baseline + offsets) < 0)

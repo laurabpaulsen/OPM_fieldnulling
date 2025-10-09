@@ -122,7 +122,7 @@ class ComMonitorThread(threading.Thread):
 
     def run(self):
         
-        if self.alive.isSet():
+        if self.alive.is_set():
             try:
                 if self.serial_port:
                     self.serial_port.close()
@@ -144,7 +144,7 @@ class ComMonitorThread(threading.Thread):
         # Restart the clock
         self.start_time = time.time()
 
-        while self.alive.isSet():
+        while self.alive.is_set():
             try:
                 if self.serial_port.inWaiting():
                     line = self.serial_port.readline()

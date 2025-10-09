@@ -93,7 +93,8 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
             
         #opm_main.fine_zero_sensors()
         # get the data in the databuffer
-        time.sleep(4) 
+
+        time.sleep(4)
         data_tmp = OPM_control.connections[8089].get("data_buffer")
         data_tmp = data_tmp[:64*3] # ignore AUX
         # Added by Jamie
@@ -186,8 +187,10 @@ if __name__ == "__main__":
 
     compcoils = CompFieldControl()
     # start_vec = [51, 37.6, 2.1, 0, 0, 0, 0, 0]
-    start_vec = [0, 0, 0, 0, 0, 0, 0, 0] 
+    # start_vec = [0, 0, 0, 0, 0, 0, 0, 0] 
     # start_vec = [5.527e+01,  8.756e+01, -9.785e-01, -1.715e+00, -3.215e-01, 3.833e+00,  7.529e-01,  2.291e+00]
+    # start_vec = [7.870e+01, 6.074e+01, -2.089e+00, -1.421e+00, -1.279e+00, 5.208e-01 , 2.967e-01, -4.064e-01] # most recent "good state" settings 
+    start_vec = [7.965e+01,  6.169e+01, -3.233e+00, -1.270e+00, -1.198e+00, 5.099e-01,  2.766e-01, -3.153e-01] 
     # compcoils.set_coil_values(start_vec)
     
 
@@ -200,19 +203,14 @@ if __name__ == "__main__":
         OPM_control.connect_all_ports()
 
         ## Work on this later!!!!!! U fool!""
-        # OPM_control.send_command("Sensor|Reboot") # Step 1 Reboot
-        OPM_control.send_command("PSU|PSU Enable Outputs")
-        time.sleep(10)
-        # OPM_control.send_command("Sensor|Auto Start") # Step 2 Auto Start
-        # print(len(OPM_control.SENSOR_STATUS_INFO))
-        # print(len(OPM_control.additional_status_info[0]))
-        OPM_control.wait_im_not_done('Sensor|Auto Start')
-
-        OPM_control.wait_im_not_done('Sensor|Field Zero ON')
-
-        OPM_control.wait_im_not_done('Sensor|Ortho & Calibrate')
+        # OPM_control.send_command("PSU|PSU Enable Outputs")
+        # time.sleep(10)
+        # OPM_control.wait_im_not_done('Sensor|Auto Start')
+        # OPM_control.wait_im_not_done('Sensor|Field Zero ON')
+        # OPM_control.wait_im_not_done('Sensor|Ortho & Calibrate')
     else:
         OPM_control.startup_sequence()
+        
 
     # time.sleep(4) # Wait until Auto Start is done
     # 00000000111000 0 0001
@@ -241,37 +239,45 @@ if __name__ == "__main__":
     # get the keys where sensor_status[key]["LLS"] is "1"
     end_time = time.time()
     print(f'Initializing took:{end_time-start_time}s to complete')
-    '''
-    active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
-    
-    coil_vals, collected_data_array, sensor_statuses = collect_data_array(np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
+    # '''
+
+    time.sleep(10)
+    # active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["LLS"] == "1"]
+    active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["ACT"] == "1"]
+    print(active_sensors)
+
+    coil_vals, data_array, sensor_statuses = collect_data_array(np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
+    # print(data_array)
 
     applied_fields = make_sensor_status_data_array(active_sensors,sensor_statuses)
-    # print(applied_fields.shape)
+    # print(applied_fields)
 
     # check_applied_fields(active_sensors,sensor_statuses)
 
     np.savez("data/optim_iteration01_applied_fields_fieldzero_just_on.npz", coil_vals = coil_vals, 
-             collected_data_array=collected_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+             data_array=data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
-    # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
+    # result = nonneg_residual_lsq_algorithm(coil_vals, applied_fields)
     result = dual_annealing_residuals(coil_vals, applied_fields)
-    # result = dual_annealing_residuals(coil_vals, collected_data_array)
+    # result = dual_annealing_residuals(coil_vals, data_array)
     start_vec = result.x
     compcoils.set_coil_values(start_vec) # Maybe comment out during data collection!?!?
     print(result)
 
+    '''
     time.sleep(20)
 
-    coil_vals, collected_data_array, sensor_statuses = collect_data_array(
+    start_vec = [0,0,0,0,0,0,0,0]
+    compcoils.set_coil_values(start_vec)
+    coil_vals, data_array, sensor_statuses = collect_data_array(
         np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
     # print(sensor_statuses)
     
-    np.savez("data/optim_iteration02_applied_fields_fieldzero_just_on.npz", coil_vals = coil_vals, 
-             collect_data_array=collect_data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
+    np.savez("data/optim_iteration02_raw_data_fieldzero_just_on.npz", coil_vals = coil_vals, 
+             data_array=data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
     # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
-    result = dual_annealing_residuals(coil_vals, applied_fields)
+    result = dual_annealing_residuals(coil_vals, data_array)
     # result = dual_annealing_residuals(coil_vals, collected_data_array)
     compcoils.set_coil_values(result.x)
     print(result)
@@ -294,9 +300,9 @@ if __name__ == "__main__":
                 # Sleep a bit to allow next frame to arrive
             time.sleep(0.1)
     """
-    '''
+    # '''
     # Closing the to objects feed: however when performed a big shift in the signal is seen 
     # compcoils.disconnect_coils() # might have to be done!!!
     compcoils.ser_monitor.join() # might have to be done!!!
-    # OPM_control.disconnect_all_ports()
+    OPM_control.disconnect_all_ports()
 
