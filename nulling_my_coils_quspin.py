@@ -193,6 +193,7 @@ if __name__ == "__main__":
     # start_vec = [5.527e+01,  8.756e+01, -9.785e-01, -1.715e+00, -3.215e-01, 3.833e+00,  7.529e-01,  2.291e+00]
     # start_vec = [7.870e+01, 6.074e+01, -2.089e+00, -1.421e+00, -1.279e+00, 5.208e-01 , 2.967e-01, -4.064e-01] # most recent "good state" settings 
     # start_vec = [8.052e+01,  6.271e+01,  1.364e-01, -1.150e+00, -4.826e-01, -2.212e-01, -1.072e-01, -1.922e-01] # Best result 10/10/2025!
+    # start_vec = [5.095e+01,  7.179e+01, -1.436e+00, -1.033e+00, -2.172e-01, 1.147e-01,  1.304e-02, -8.203e-02] # result from starting at all zero 10/10/2025!
     # compcoils.set_coil_values(start_vec)
     
 
@@ -266,10 +267,11 @@ if __name__ == "__main__":
     compcoils.set_coil_values(start_vec) # Maybe comment out during data collection!?!?
     print(result)
 
-    '''
-    time.sleep(20)
+    # '''
+    # start_vec = [0,0,0,0,0,0,0,0]
+    time.sleep(10)
 
-    start_vec = [0,0,0,0,0,0,0,0]
+
     compcoils.set_coil_values(start_vec)
     coil_vals, data_array, sensor_statuses = collect_data_array(
         np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
