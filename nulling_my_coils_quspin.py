@@ -257,9 +257,6 @@ if __name__ == "__main__":
 
     # check_applied_fields(active_sensors,sensor_statuses)
 
-    np.savez("data/optim_iteration01_applied_fields_fieldzero_just_on.npz", coil_vals = coil_vals, 
-             data_array=data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
-
     # result = nonneg_residual_lsq_algorithm(coil_vals, applied_fields)
     result = dual_annealing_residuals(coil_vals, applied_fields)
     # result = dual_annealing_residuals(coil_vals, data_array)
@@ -267,25 +264,40 @@ if __name__ == "__main__":
     compcoils.set_coil_values(start_vec) # Maybe comment out during data collection!?!?
     print(result)
 
+    time.sleep(10)
+    
+    OPM_control.wait_im_not_done('Sensor|Ortho & Calibrate')
+    time.sleep(10)
+    np.savez("data/optim_iteration01_applied_fields_fieldzero_just_on.npz", coil_vals = coil_vals, 
+            data_array=data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors, 
+            applied_fields=applied_fields, comp_opt_res=result, res_fields=OPM_control.sensor_status.copy())
+
     # '''
     # start_vec = [0,0,0,0,0,0,0,0]
-    time.sleep(10)
 
 
-    compcoils.set_coil_values(start_vec)
+    # compcoils.set_coil_values(start_vec)
+
+    active_sensors = [key for key in OPM_control.sensor_status if OPM_control.sensor_status[key]["ACT"] == "1"]
+
     coil_vals, data_array, sensor_statuses = collect_data_array(
         np.array(start_vec), rescale_steps, compcoils, OPM_control, active_sensors)
     # print(sensor_statuses)
+
+    applied_fields = make_sensor_status_data_array(active_sensors,sensor_statuses)
     
-    np.savez("data/optim_iteration02_raw_data_fieldzero_just_on.npz", coil_vals = coil_vals, 
-             data_array=data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors)
 
     # result = nonneg_residual_lsq_algorithm(coil_vals, collected_data_array)
-    result = dual_annealing_residuals(coil_vals, data_array)
-    # result = dual_annealing_residuals(coil_vals, collected_data_array)
+    # result = dual_annealing_residuals(coil_vals, data_array)
+    result = dual_annealing_residuals(coil_vals, applied_fields)
     compcoils.set_coil_values(result.x)
     print(result)
-
+    
+    OPM_control.wait_im_not_done('Sensor|Ortho & Calibrate')
+    time.sleep(10)
+    np.savez("data/optim_iteration02_raw_data_fieldzero_just_on.npz", coil_vals = coil_vals, 
+             data_array=data_array, sensor_statuses=sensor_statuses, active_sensors = active_sensors, 
+             applied_fields=applied_fields, comp_opt_res=result, res_fields=OPM_control.sensor_status.copy())
 
     """
     n_frames_to_print = 5
