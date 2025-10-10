@@ -75,6 +75,8 @@ def collect_data_array(start_vec, rescale_step, compcoils_control:CompFieldContr
     This function assumes that the coil values are already set to the start vec. 
     Then the coil values are changed one at a time according to the step size and records the fields (x, y, z) across the sensors. 
     """
+    compcoils_control.set_coil_values(start_vec)
+
     # prepare a matrix with the coil values at each iteration when we change the coil parameters one at a time. The first row is the start vec.
     coil_values = create_matrix_of_coil_vals(start_vec, rescale_step)
 
@@ -187,10 +189,10 @@ if __name__ == "__main__":
 
     compcoils = CompFieldControl()
     # start_vec = [51, 37.6, 2.1, 0, 0, 0, 0, 0]
-    # start_vec = [0, 0, 0, 0, 0, 0, 0, 0] 
+    start_vec = [0, 0, 0, 0, 0, 0, 0, 0] 
     # start_vec = [5.527e+01,  8.756e+01, -9.785e-01, -1.715e+00, -3.215e-01, 3.833e+00,  7.529e-01,  2.291e+00]
     # start_vec = [7.870e+01, 6.074e+01, -2.089e+00, -1.421e+00, -1.279e+00, 5.208e-01 , 2.967e-01, -4.064e-01] # most recent "good state" settings 
-    start_vec = [7.965e+01,  6.169e+01, -3.233e+00, -1.270e+00, -1.198e+00, 5.099e-01,  2.766e-01, -3.153e-01] 
+    # start_vec = [8.052e+01,  6.271e+01,  1.364e-01, -1.150e+00, -4.826e-01, -2.212e-01, -1.072e-01, -1.922e-01] # Best result 10/10/2025!
     # compcoils.set_coil_values(start_vec)
     
 

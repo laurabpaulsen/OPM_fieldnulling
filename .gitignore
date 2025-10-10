@@ -212,3 +212,4 @@ utils/coilAPI/*
 .DS_store
 
 data/*
+.vscode/*
